@@ -8,7 +8,7 @@ Aula Fantasma es una aplicación portable para **Windows 10/11 x64** que coloca 
 
 La aplicación procesa el audio localmente y funciona sin servicios en la nube. El portable incluye su runtime; no necesitas instalar Node.js para usarlo.
 
-**[Descargar el portable para Windows](https://github.com/IsaiFR/Aula-Fantasma/releases/tag/v1.17.0)** · Extrae el ZIP completo y abre `INICIAR-APP.cmd`.
+El repositorio contiene el código fuente, los recursos, las mascotas y las pruebas. Para generar el portable en Windows, sigue las instrucciones de [desarrollo desde un clon de Git](#desarrollo-desde-un-clon-de-git).
 
 ## Funciones principales
 
