@@ -1,0 +1,10 @@
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const { EDUGHOST_ANIMATION, serializePet } = require('../src/pet-package.cjs');
+const root = path.join(__dirname, '..');
+const images = Object.fromEntries(['open', 'closed'].map(kind => [kind, { mime: 'image/png', bytes: fs.readFileSync(path.join(root, 'web', 'edughost', `${kind}.png`)) }]));
+fs.mkdirSync(path.join(root, 'pets'), { recursive: true });
+const target = path.join(root, 'pets', 'EduGhost.aulapet');
+fs.writeFileSync(target, serializePet({ name: 'EduGhost', images, animation: EDUGHOST_ANIMATION }));
+console.log(`Mascota guardada: ${target}`);

@@ -1,0 +1,67 @@
+# Dependencias y caches locales
+node_modules/
+.npm-cache/
+.cache/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Secretos y configuración privada (solo se publica la plantilla)
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.json
+.aws/
+
+# Temporales, pruebas y preferencias de Electron
+.smoke-data/
+.gif-build/
+/docs/migracion-verificada.json
+tmp/
+temp/
+coverage/
+test-results/
+playwright-report/
+*.log
+*.tmp
+*.temp
+*.bak
+*.old
+
+# Distribución y respaldos: permanecen solo en el equipo
+*.zip
+*.7z
+*.rar
+dist/
+build/
+out/
+release-v*/
+
+# Runtime portable generado en la raíz
+/*.exe
+/*.dll
+/*.pak
+/*.bin
+/icudtl.dat
+/version
+/LICENSE
+/LICENSES.chromium.html
+/vk_swiftshader_icd.json
+/locales/
+/resources/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>Gatito fantasma provisional</title>
+  <path d="M66 183C39 187 29 167 37 137c4-15 0-21-8-29-7-9-2-24 11-24 25 0 35 39 26 70" fill="#34324e" stroke="#29243d" stroke-width="7" stroke-linecap="round"/>
+  <path d="M57 208c12-27 20-56 20-91V77L66 36q-2-10 8-6l35 24q18-7 37-2l36-28q9-7 12 5l-1 57c9 31 7 74 24 112l10 21q-11 15-27 4-12 20-29 5-18 15-34 2-18 18-32 4-24 13-32-5-17 9-16-21Z" fill="#f9f7ff" stroke="#29243d" stroke-width="7" stroke-linejoin="round"/>
+  <path d="m80 42 12 22-12 11Z M181 41l-19 22 17 10Z" fill="#f5b4bf"/>
+  <path d="M91 142c-1 38-10 60-14 73M161 153c3 32 13 49 19 61" fill="none" stroke="#dbd8eb" stroke-width="8" stroke-linecap="round"/>
+  <path d="M82 101q16-9 38 0l5 11h14l5-11q19-9 40-1l-4 29q-7 12-25 6-13-5-13-21h-16q-2 21-20 22-24 2-24-35Z" fill="#d1cae8" stroke="#29243d" stroke-width="7" stroke-linejoin="round"/>
+  <ellipse cx="104" cy="115" rx="9" ry="13" fill="#29243d"/><ellipse cx="159" cy="114" rx="9" ry="13" fill="#29243d"/>
+  <circle cx="108" cy="110" r="3" fill="white"/><circle cx="163" cy="109" r="3" fill="white"/>
+  <path d="m126 141 6 5 6-5" fill="#29243d" stroke="#29243d" stroke-width="4" stroke-linecap="round"/>
+  <path d="M132 146q-1 13-12 7m12-7q2 13 12 6" fill="none" stroke="#29243d" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="96" cy="150" rx="9" ry="5" fill="#f6c5ca"/><ellipse cx="167" cy="149" rx="9" ry="5" fill="#f6c5ca"/>
+</svg>

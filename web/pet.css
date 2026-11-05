@@ -1,0 +1,30 @@
+#pet-anchor { position: absolute; top: 0; left: 0; visibility: hidden; pointer-events: none; user-select: none; will-change: transform; }
+#pet-body { position: relative; width: 100%; height: 100%; transform-origin: 52% 62%; will-change: transform; }
+#pet, #pet-closed { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: contain; pointer-events: none; user-select: none; }
+#pet-closed { opacity: 0; }
+#voice-layer { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; background: transparent; color-scheme: normal; z-index: 4; }
+#pet-voice { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none; pointer-events: none; }
+.voice-active #pet, .voice-active #pet-closed { opacity: 0 !important; }
+.voice-active #pet-voice { display: block; }
+#pet-cloth { position: absolute; inset: 0; width: 100%; height: 100%; display: none; pointer-events: none; }
+.cloth-active #pet { opacity: 0; }
+.cloth-active #pet-cloth { display: block; }
+#pet-rig { position: absolute; inset: 0; width: 100%; height: 100%; display: none; pointer-events: none; }
+#pet-flipbook { position: absolute; inset: 0; width: 100%; height: 100%; display: none; pointer-events: none; }
+#pet-vehicle { position: absolute; inset: 0; width: 100%; height: 100%; display: none; pointer-events: none; }
+.vehicle-active #pet, .vehicle-active #pet-cloth, .vehicle-active #pet-closed { opacity: 0; }
+.vehicle-active #pet-vehicle { display: block; }
+.flipbook-active #pet, .flipbook-active #pet-cloth, .flipbook-active #pet-closed { opacity: 0; }
+.flipbook-active #pet-flipbook { display: block; }
+.rig-active #pet, .rig-active #pet-cloth, .rig-active #pet-closed { opacity: 0; }
+.rig-active #pet-rig { display: block; }
+/* El archivo de mascota aporta las regiones de los ojos. */
+#pet-closed {
+  mask-repeat: no-repeat;
+}
+#boo { position: absolute; left: 0; top: 0; visibility: hidden; pointer-events: none; z-index: 5; box-sizing: border-box; padding: .38em .68em; background: #fff8ef; color: #332142; border: .1em solid #3b2850; border-radius: .62em; font: 800 22px/1.1 "Segoe UI", system-ui, sans-serif; letter-spacing: .03em; white-space: nowrap; transform-origin: center; filter: drop-shadow(0 .12em .12em #0002); }
+#boo::after { content: ''; position: absolute; width: .44em; height: .44em; background: #fff8ef; transform: rotate(45deg); }
+#boo[data-placement="above"]::after { left: calc(var(--tail-x) - .22em); bottom: -.32em; border-right: .1em solid #3b2850; border-bottom: .1em solid #3b2850; }
+#boo[data-placement="below"]::after { left: calc(var(--tail-x) - .22em); top: -.32em; border-left: .1em solid #3b2850; border-top: .1em solid #3b2850; }
+#boo[data-placement="left"]::after { right: -.32em; top: calc(var(--tail-y) - .22em); border-right: .1em solid #3b2850; border-top: .1em solid #3b2850; }
+#boo[data-placement="right"]::after { left: -.32em; top: calc(var(--tail-y) - .22em); border-left: .1em solid #3b2850; border-bottom: .1em solid #3b2850; }

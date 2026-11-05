@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aula Fantasma</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="panel.css">
+  <link rel="stylesheet" href="pet.css">
+  <script src="layout.js" defer></script>
+  <script src="cloth.js" defer></script>
+  <script src="rig.js" defer></script>
+  <script src="vehicle.js" defer></script>
+  <script src="flipbook.js" defer></script>
+  <script src="dracula-bat.js" defer></script>
+  <script src="voice.js" defer></script>
+  <script src="panel.js" defer></script>
+  <script src="overlay.js" defer></script>
+</head>
+<body>
+  <section class="canvas-switch" aria-label="Formato del lienzo"><div><strong>Lienzo de la clase</strong><small id="canvas-dimensions">1920 × 1080 · ajustes guardados por formato</small></div><div class="canvas-buttons" role="group" aria-label="Elegir lienzo"><button id="canvas-landscape" class="secondary-button" aria-pressed="true">16:9 Horizontal</button><button id="canvas-portrait" class="secondary-button" aria-pressed="false">9:16 Vertical</button></div></section>
+  <section class="pet-modes" aria-label="Tus dos mascotas">
+    <article class="mode-card" id="mode-voice"><button id="edit-voice" class="mode-edit" aria-pressed="false"><strong>Voz en una esquina</strong><small>Habla y parpadea · .pet</small><span id="voice-choice-name"></span></button><label class="mode-toggle"><input type="checkbox" data-setting="voiceEnabled" aria-label="Mostrar mascota de voz"><span>Mostrar</span></label><button id="choose-voice" class="secondary-button">Elegir mascota de voz</button></article>
+    <article class="mode-card" id="mode-companion"><button id="edit-companion" class="mode-edit" aria-pressed="true"><strong>Recorrido y saludo</strong><small>Se desplaza por la pantalla · .aulapet</small><span id="companion-choice-name"></span></button><label class="mode-toggle"><input type="checkbox" data-setting="companionEnabled" aria-label="Mostrar mascota de recorrido"><span>Mostrar</span></label><button id="choose-companion" class="secondary-button">Elegir mascota de recorrido</button></article>
+  </section>
+  <main>
+    <section class="visual-column">
+      <div class="section-heading"><div><span class="eyebrow">VISTA PREVIA · AMBAS MASCOTAS</span><h1>Dos compañeros en el aula.</h1></div><span id="motion-status" class="badge">En movimiento</span></div>
+      <div class="preview-stage" id="preview" data-surface="preview">
+        <div class="sample-slide" aria-hidden="true"><div class="slide-kicker">MATEMÁTICAS · CLASE EN LÍNEA</div><div class="slide-title">Las ideas también<br>tienen compañía.</div><div class="sample-formula">f(x) = x² + 2x + 1</div><div class="sample-lines"><span></span><span></span></div></div>
+        <div id="pet-anchor"><div id="pet-body"><img id="pet" alt="Mascota en la escena de ejemplo" draggable="false"><img id="pet-closed" alt="" draggable="false"></div></div>
+        <div id="boo" aria-hidden="true">BOO!!</div>
+      </div>
+      <div class="preview-toolbar"><button id="pause" class="primary-button">Pausar recorrido</button><button id="reset-position" class="secondary-button">Volver al inicio</button><button id="class-preset" class="text-button">Modo clase ↗</button></div>
+      <div class="obs-card">
+        <div class="card-heading"><div><span class="eyebrow">CONEXIÓN A OBS</span><h2>La mascota, sobre tus escenas.</h2></div><span id="obs-status" class="badge neutral">Sin conectar</span></div>
+        <p>Añade una fuente <strong>Navegador</strong> en OBS y pega esta dirección.</p>
+        <div class="url-row"><input id="obs-url" readonly aria-label="Dirección local para OBS"><button id="copy-url" class="secondary-button">Copiar</button></div>
+        <div class="obs-foot"><span id="obs-dimensions">Fuente Navegador 16:9: 1920 × 1080. Crea una fuente distinta por formato.</span><button id="open-guide" class="text-button">Ver instrucciones ↗</button></div>
+        <p id="connection-detail" class="connection-detail">La dirección estará disponible mientras la app permanezca abierta.</p>
+      </div>
+      <div class="card" id="ghost-opacity-card" hidden><span class="eyebrow">TRANSPARENCIA DE EDUGHOST</span>
+        <div class="range-label"><label for="ghostSolidSeconds">Tiempo al 100 %</label><span class="range-value"><input id="ghostSolidSeconds-value" type="number" min="1" max="600" step="1" value="20" data-setting="ghostSolidSeconds" aria-label="Tiempo de EduGhost al 100 por ciento, en segundos"><span>s</span></span></div><input id="ghostSolidSeconds" type="range" min="1" max="600" step="1" data-setting="ghostSolidSeconds">
+        <div class="range-label"><label for="ghostFadedSeconds">Tiempo al 75 %</label><span class="range-value"><input id="ghostFadedSeconds-value" type="number" min="1" max="600" step="1" value="8" data-setting="ghostFadedSeconds" aria-label="Tiempo de EduGhost al 75 por ciento, en segundos"><span>s</span></span></div><input id="ghostFadedSeconds" type="range" min="1" max="600" step="1" data-setting="ghostFadedSeconds">
+        <p class="hint">Alterna automáticamente entre ambos estados con una transición suave. Exclusivo de EduGhost de voz. Los tiempos se guardan para cada formato.</p>
+      </div>
+      <div class="card" id="dracula-bat-card" hidden><span class="eyebrow">TRANSFORMACIÓN DE EDUDRACULA</span>
+        <label class="toggle-row"><span><strong>Convertirse en murciélago</strong><small>Alterna con su forma original y vuela entre humo rojo.</small></span><input id="draculaBatEnabled" type="checkbox" data-setting="draculaBatEnabled" role="switch"><span class="switch" aria-hidden="true"></span></label>
+        <div class="range-label"><label for="draculaSeconds">Tiempo como Drácula</label><span class="range-value"><input id="draculaSeconds-value" type="number" min="1" max="600" step="1" value="20" data-setting="draculaSeconds" aria-label="Tiempo como Drácula en segundos"><span>s</span></span></div><input id="draculaSeconds" type="range" min="1" max="600" step="1" data-setting="draculaSeconds">
+        <div class="range-label"><label for="draculaBatSeconds">Tiempo como murciélago</label><span class="range-value"><input id="draculaBatSeconds-value" type="number" min="1" max="600" step="1" value="8" data-setting="draculaBatSeconds" aria-label="Tiempo como murciélago en segundos"><span>s</span></span></div><input id="draculaBatSeconds" type="range" min="1" max="600" step="1" data-setting="draculaBatSeconds">
+        <p class="hint">El murciélago aletea y flota en la misma esquina. Al desactivar, vuelve a Drácula. Los tiempos y el interruptor se guardan para cada formato.</p>
+      </div>
+      <div class="companion-actions">
+      <div class="card character-card"><span class="eyebrow">EL SALUDO</span>
+        <label class="toggle-row compact"><span><strong id="greeting-toggle-label">Detenerse y decir BOO!!</strong></span><input type="checkbox" data-setting="booEnabled" role="switch"><span class="switch" aria-hidden="true"></span></label>
+        <button id="boo-now" class="secondary-button full-width">BOO!! ahora</button><p id="patrol-description" class="hint" hidden>Camina 30 segundos, descansa 10 y cambia de dirección.</p><details><summary>Frecuencia del saludo</summary><div class="range-label"><label for="booInterval">Intervalo aproximado</label><span class="range-value"><input id="booInterval-value" type="number" min="10" max="120" step="1" value="25" data-setting="booInterval" aria-label="Intervalo aproximado en segundos"><span>s</span></span></div><input id="booInterval" type="range" min="10" max="120" data-setting="booInterval"><p class="hint">Se detiene 3 segundos, saluda y continúa.</p></details>
+      </div>
+      </div>
+      <div class="shortcuts"><span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>P</kbd> Pausar</span><span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>H</kbd> Ocultar / mostrar</span></div>
+      <p id="shortcut-warning" class="hint" hidden>Algún atajo está ocupado por otra app. Usa los botones o el icono de la bandeja.</p>
+    </section>
+    <aside class="controls-column" aria-label="Configuración de la mascota">
+      <div class="configuration-heading"><h2 id="configuration-title" class="configuration-title">Configurar recorrido y saludo</h2><button id="export-pet" class="text-button">Guardar mascota en un archivo</button></div>
+      <div id="voice-card" class="card voice-card" hidden><span class="eyebrow">VOZ Y PARPADEO</span>
+        <label class="toggle-row"><span><strong>Usar mi micrófono</strong><small>La boca reacciona al volumen de tu voz.</small></span><input id="micEnabled" type="checkbox" data-setting="micEnabled" role="switch"><span class="switch" aria-hidden="true"></span></label>
+        <label class="field-label" for="micDeviceId">Micrófono</label><select id="micDeviceId" data-setting="micDeviceId"><option value="default">Predeterminado del sistema</option></select>
+        <div class="voice-level"><meter id="mic-level" min="-70" max="0" value="-70" aria-label="Nivel del micrófono en decibelios"></meter><span id="voice-pose">En silencio</span></div>
+        <p id="mic-status" class="hint" role="status">Micrófono apagado.</p>
+        <div class="range-label"><label for="micThreshold">Umbral para hablar</label><span class="range-value"><input type="number" min="-70" max="-5" step="1" value="-38" data-setting="micThreshold" aria-label="Umbral de voz en decibelios"><span>dB</span></span></div><input id="micThreshold" type="range" min="-70" max="-5" data-setting="micThreshold">
+        <div class="range-ends"><span>Más sensible</span><span>Menos sensible</span></div>
+        <div class="range-label"><label for="micRelease">Cerrar la boca tras</label><span class="range-value"><input type="number" min="0" max="1000" step="10" value="180" data-setting="micRelease" aria-label="Espera para cerrar la boca en milisegundos"><span>ms</span></span></div><input id="micRelease" type="range" min="0" max="1000" step="10" data-setting="micRelease">
+        <button id="mic-retry" class="text-button">Reintentar micrófono</button>
+        <p class="hint">Baja el umbral si no abre la boca; súbelo si responde al ruido. El parpadeo es automático. El audio se analiza en tu equipo, sin grabarlo ni enviarlo a OBS.</p>
+      </div>
+      <div class="card outputs-card"><span class="eyebrow">DÓNDE APARECE</span>
+        <label class="toggle-row"><span><strong>En mi escritorio</strong><small>Sobre tus ventanas, sin bloquear clics.</small></span><input type="checkbox" data-setting="desktopEnabled" role="switch"><span class="switch" aria-hidden="true"></span></label>
+        <label class="toggle-row"><span><strong>En mis escenas de OBS</strong><small>Una capa independiente y transparente.</small></span><input type="checkbox" data-setting="obsEnabled" role="switch"><span class="switch" aria-hidden="true"></span></label>
+        <label class="field-label" for="monitor">Monitor del escritorio</label><select id="monitor" data-setting="displayId"></select>
+        <p class="hint">En OBS, añade la fuente en cada escena donde quieras verla.</p>
+      </div>
+      <div class="card movement-card"><span class="eyebrow" id="adjustment-label">EL RECORRIDO</span>
+        <div id="corner-field" hidden><label class="field-label" for="corner">Esquina de la mascota de voz</label><select id="corner" data-setting="corner"><option value="bottom-right">Abajo a la derecha</option><option value="bottom-left">Abajo a la izquierda</option><option value="top-right">Arriba a la derecha</option><option value="top-left">Arriba a la izquierda</option></select></div>
+        <label class="field-label" for="mode">Cómo se mueve</label><select id="mode" data-setting="mode"><option value="edges">Por los bordes · ideal para clase</option><option value="free">Por toda la pantalla</option><option value="still">Quieto en una esquina</option></select>
+        <div class="range-label"><label for="size">Tamaño</label><span class="range-value"><input id="size-value" type="number" min="60" max="300" step="1" value="150" data-setting="size" aria-label="Tamaño en píxeles"><span>px</span></span></div><input id="size" type="range" min="60" max="300" step="1" data-setting="size"><div class="range-ends"><span>Discreto</span><span>Grande</span></div>
+        <div class="range-label"><label for="speed">Velocidad</label><span class="range-value"><input id="speed-value" type="number" min="10" max="180" step="1" value="65" data-setting="speed" aria-label="Velocidad en píxeles por segundo"><span>px/s</span></span></div><input id="speed" type="range" min="10" max="180" step="1" data-setting="speed"><div class="range-ends"><span>Tranquilo</span><span>Rápido</span></div>
+        <details><summary>Más opciones</summary><div id="manual-opacity-controls"><div class="range-label"><label for="opacity">Opacidad</label><span class="range-value"><input id="opacity-value" type="number" min="20" max="100" step="1" value="100" data-setting="opacity" aria-label="Opacidad en porcentaje"><span>%</span></span></div><input id="opacity" type="range" min="20" max="100" data-setting="opacity"></div><div class="range-label"><label for="margin">Distancia al borde</label><span class="range-value"><input id="margin-value" type="number" min="0" max="100" step="1" value="24" data-setting="margin" aria-label="Distancia al borde en píxeles"><span>px</span></span></div><input id="margin" type="range" min="0" max="100" data-setting="margin"></details>
+        <p class="hint">Tamaño y velocidad toman como referencia un lienzo de 1920 × 1080.</p>
+      </div>
+      <div class="card presence-card"><span class="eyebrow">APARICIONES</span>
+        <label class="toggle-row compact"><span><strong>Salir y regresar</strong><small>Deja descansar la pantalla entre visitas.</small></span><input type="checkbox" data-setting="presenceEnabled" role="switch"><span class="switch" aria-hidden="true"></span></label>
+        <div class="range-label"><label for="visibleSeconds">Tiempo visible</label><span class="range-value"><input id="visibleSeconds-value" type="number" min="5" max="300" step="1" value="35" data-setting="visibleSeconds" aria-label="Tiempo visible en segundos"><span>s</span></span></div><input id="visibleSeconds" type="range" min="5" max="300" step="1" data-setting="visibleSeconds">
+        <div class="range-label"><label for="awaySeconds">Tiempo fuera de pantalla</label><span class="range-value"><input id="awaySeconds-value" type="number" min="5" max="600" step="1" value="60" data-setting="awaySeconds" aria-label="Tiempo fuera de pantalla en segundos"><span>s</span></span></div><input id="awaySeconds" type="range" min="5" max="600" step="1" data-setting="awaySeconds">
+        <p id="presence-status" class="hint" role="status">Sale en 35 s</p><p class="hint">Sale y entra por un lateral. Al pausar también se detiene la espera.</p>
+      </div>
+    </aside>
+  </main>
+  <footer><span>Cerrar la ventana deja la mascota activa en la bandeja.</span><button id="quit" class="text-button">Salir de la app</button></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

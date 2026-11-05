@@ -1,0 +1,130 @@
+AULA FANTASMA — Windows 10/11 x64
+
+1.11.0 — TRANSPARENCIA AUTOMÁTICA DE EDUGHOST DE VOZ
+Solo EduGhost .pet alterna entre 100% y 75%, con transiciones suaves.
+En Transparencia de EduGhost elige el tiempo de cada estado (1-600 s).
+Por defecto: 20 s al 100% y 8 s al 75%, más 0.8 s por transición.
+Estos controles sustituyen a la opacidad manual de esta mascota.
+Los tiempos se guardan por formato. Las demás mascotas conservan su
+opacidad manual. Se mantienen voz, parpadeo, espejo y movimiento de sábana.
+
+1.10.1 — POSICIÓN EN OBS VERTICAL
+Usa dos fuentes Navegador independientes: horizontal 1920x1080 y vertical
+1080x1920, ambas con la URL del panel. En el otro formato elige Crear nueva;
+Añadir existente comparte las dimensiones de la fuente original.
+Si aparece hacia el centro, revisa el ancho y alto en Propiedades de la
+fuente, restablece su transformación y ajústala a la pantalla.
+
+NUEVO EN 1.10.0 — DOS FORMATOS Y EDUGHOST ANIMADO
+En Lienzo de la clase elige 16:9 Horizontal o 9:16 Vertical. Cada formato
+recuerda sus mascotas, tamaños, esquina, recorrido y demás ajustes visuales.
+Cambiar requiere un clic y conserva el micrófono conectado. La primera vez
+el otro formato toma tus ajustes actuales; después se guarda por separado.
+En OBS usa 1920x1080 para horizontal y 1080x1920 para vertical. La misma URL
+entrega el formato activo; la app no cambia por sí sola tus escenas de OBS.
+EduGhost (voz) ahora flota y ondula la sábana al hablar y parpadear, con la
+cara y las patas protegidas. Se conservan las cuatro imágenes originales.
+
+NUEVO EN 1.9.1 — ESPEJO AUTOMÁTICO
+La mascota de voz mira al centro: se refleja en las esquinas derechas y
+conserva la orientación original en las izquierdas. Se aplica al hablar y
+al parpadear. Los selectores están en las tarjetas superiores; se quitó
+el bloque duplicado Tu mascota. Guardar mascota sigue en configuración.
+
+NUEVO EN 1.9.0 — DOS MASCOTAS SIMULTÁNEAS
+"Voz en una esquina" elige mascotas .pet para hablar y parpadear.
+"Recorrido y saludo" elige mascotas .aulapet para moverse por la pantalla.
+Cada tarjeta tiene su propio selector y control "Mostrar". Pulsa su nombre
+para configurar sus ajustes. Puedes tener ambas activas al mismo tiempo.
+En la opción de voz elige una de las cuatro esquinas; configurar o cambiar
+la mascota de recorrido no interrumpe el micrófono ni cambia la de voz.
+Las dos usan las salidas de escritorio y OBS habituales, con una sola URL.
+Se guardan las dos selecciones y sus ajustes de manera independiente.
+
+NUEVO EN 1.8.0 — MASCOTAS DE VOZ .PET
+En "Cambiar mascota" elige EduWitch (voz), EduDracula (voz), EduGhost (voz)
+o EduMomia (voz). En "Voz y parpadeo", activa "Usar mi micrófono".
+Elige la entrada y ajusta el umbral: más bajo = más sensible. "Cerrar la
+boca tras" ajusta la espera. El parpadeo es automático e independiente.
+Funciona también con el panel minimizado y se sincroniza con la salida OBS.
+El audio se analiza localmente sin grabarlo ni enviarlo a OBS.
+Al ocultar la opción de voz se libera el micrófono. La app recuerda
+su activación para la próxima vez que uses una mascota de voz.
+Si aparece acceso denegado, permite el micrófono para apps de escritorio
+en Configuración de Windows y pulsa "Reintentar micrófono".
+"Guardar mascota en un archivo" exporta estas mascotas como .pet.
+Conserva compatibilidad con las mascotas .aulapet anteriores.
+
+1. Abre "Aula Fantasma.exe". No necesitas instalar Node ni abrir una terminal.
+2. Activa "En mi escritorio" y "En mis escenas de OBS" según lo que necesites.
+3. Copia la dirección que muestra la app. En OBS añade una fuente Navegador
+   y pega esa dirección. Usa las dimensiones de tu lienzo, por ejemplo 1920x1080.
+4. Coloca esa fuente ENCIMA de la cámara, diapositivas o captura.
+5. Mantén Aula Fantasma abierta durante la clase. Cerrar el panel la deja en
+   la bandeja; "Salir de la app" cierra también el servidor y ambas salidas.
+
+Ctrl+Alt+P: pausa/reanuda el recorrido.
+Ctrl+Alt+H: oculta/muestra ambas salidas.
+Si esos atajos están ocupados, usa el panel o la bandeja.
+
+APARICIONES: "Salir y regresar" deja al fantasma visible 35 segundos, lo saca
+por un lateral y lo trae de vuelta tras 60 segundos fuera. Cada transición
+dura 2 segundos. Ajusta ambos tiempos en el panel (se indican en segundos).
+El contador también se pausa. Desactiva el ciclo para tenerlo siempre visible.
+Si está diciendo BOO!!, termina el saludo antes de salir. No saluda fuera.
+
+EduGhost flota, parpadea cada 3-6 segundos y se detiene para decir BOO!! cada
+25 segundos aproximadamente. El globo dura 3 segundos y después continúa.
+En "El saludo" puedes activar/desactivar BOO o usar "BOO!! ahora".
+"Frecuencia del saludo" permite ajustar el intervalo sin llenar el panel.
+La sábana anima sus pliegues y dobladillo sin deformar la cara.
+La tela se mueve más al recorrer y mantiene ondas suaves durante BOO!!.
+Pausar congela el recorrido, flotación, ondulación, parpadeo y globo de EduGhost.
+Los fotogramas internos de un GIF/WebP importado no se detienen con la pausa.
+El PNG original se conserva intacto. "Volver a EduGhost" recupera su parpadeo.
+
+MASCOTAS .AULAPET: EduGhost.aulapet está en la carpeta "pets" junto al
+ejecutable. Guarda imágenes, flotación, ondulación y parpadeo en un solo archivo.
+"Cargar mascota" abre un .aulapet; "Guardar mascota" exporta el personaje
+actual. Sus animaciones se aplican automáticamente, sin botones individuales.
+La app conserva la selección al cerrarse, aunque muevas el archivo original.
+También admite PNG/WebP/GIF; una imagen sola recibe flotación. Para parpadear
+u ondear necesita su propio perfil preparado, sin usar las zonas de otro gato.
+BOO, recorrido, apariciones y las salidas se ajustan desde la app.
+
+Si la versión anterior sigue abierta, elige "Salir de la app" antes de abrir
+esta versión. Cerrar solo la ventana la mantiene abierta en la bandeja.
+En OBS, actualiza la caché de la fuente Navegador para cargar las animaciones
+nuevas. Confirma que su dirección coincida con la que muestra el panel.
+
+IMPORTANTE: conserva toda esta carpeta junto al ejecutable. Si mueves la app,
+mueve la carpeta completa. El ejecutable no funciona solo.
+
+La salida del escritorio intenta excluirse de la captura de pantalla para
+evitar duplicados. Si tu método de captura la incluye, desactiva "En mi
+escritorio" durante esa escena y usa la fuente de OBS.
+
+Consulta GUIA-OBS.html para la configuración y solución de problemas.
+
+EDUFRANKENSTEIN (Aula Fantasma 1.7.2): selecciona pets/EduFrankenstein.aulapet
+en Cargar mascota. Se queda tumbado, cae el rayo, aparece ¡Está vivo!, se
+levanta, camina, cae y repite: 10 s dormido, 5 s despertando, 30 s caminando
+y 0.75 s de caída. Ciclo: 45.75 segundos. El globo ya no tiene la marca en V.
+Pausar congela los fotogramas y el recorrido. Resucitar ahora adelanta el rayo.
+El GIF transparente independiente está en pets/EduFrankenstein.gif.
+El paquete v5 incluye GIF, hoja PNG y perfil; conserva los formatos v1-v4.
+Por toda la pantalla recorre ambos ejes; Por los bordes sigue el perímetro.
+Gira hacia el sentido del recorrido; ¡Está vivo! conserva su lectura.
+La mascota incluida anterior se actualiza al reiniciar, sin perder tus ajustes.
+
+EDUSCREAM GIF (versión 1.6.0): carga EduScream.aulapet desde pets.
+Aplica 180 px, 30 px/s y saludo fijo cada 30 segundos de actividad.
+Tiene cuatro patas dibujadas en cada pose, sombras y orientación coherentes.
+Se detiene, levanta el cuchillo (0.7 s), muestra Detrás de ti (2 s),
+baja el cuchillo (0.7 s) y continúa. Pausa congela los fotogramas.
+Las apariciones quedan inicialmente desactivadas; puedes volver a activarlas.
+El globo y su temporizador pertenecen a la app; no están en los GIF aislados.
+EduScream.gif y EduScream_Saludo.gif están en web/eduscream; miden 180 x 180 px.
+El paquete v4 requiere Aula Fantasma 1.6.0, compatible también con v1-v3.
+La versión incluida anterior se actualiza al abrir la app; los personajes
+personalizados se conservan. EduGhost.aulapet sigue disponible.

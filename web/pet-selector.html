@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elegir mascota · Aula Fantasma</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/panel.css">
+  <link rel="stylesheet" href="/pet-selector.css">
+  <script src="/pet-selector.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span><div><strong>Aula Fantasma</strong><span>Tu pequeña compañía para las clases.</span></div></div>
+    <button id="back-panel" class="secondary-button">← Volver</button>
+  </header>
+  <main class="selector-page">
+    <div class="selector-heading">
+      <div><span class="eyebrow" id="selector-type">TUS PERSONAJES</span><h1 id="selector-title">Elige tu compañero.</h1><p id="selector-description">Cada mascota tiene su propia forma de moverse y saludar.</p></div>
+      <button id="add-pet" class="secondary-button">Añadir mascota</button>
+    </div>
+    <p id="library-status" role="status">Cargando mascotas…</p>
+    <div id="pet-grid" class="pet-grid" aria-label="Mascotas disponibles"></div>
+  </main>
+</body>
+</html>
