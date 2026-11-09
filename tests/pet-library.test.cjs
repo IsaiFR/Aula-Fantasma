@@ -10,7 +10,7 @@ const root = path.join(__dirname, '..');
 
 test('El selector incluye los personajes empaquetados sin duplicar el GIF independiente de Frankenstein', () => {
   const { entries, unavailable } = loadLibrary([path.join(root, 'pets'), path.join(root, 'pets')]);
-  assert.deepEqual([...entries.values()].map(entry => entry.pet.name), ['Catrina', 'EduCatrin', 'EduDracula (voz)', 'EduF1', 'EduFrankenstein', 'EduGhost', 'EduGhost (voz)', 'EduKimi', 'EduMomia (voz)', 'EduPiramyd', 'EduScream', 'EduWitch (voz)', 'EduZombie']);
+  assert.deepEqual([...entries.values()].map(entry => entry.pet.name), ['Catrina', 'EduCatrin', 'EduClaus', 'EduCookie', 'EduDominos', 'EduDonalds', 'EduDoom', 'EduDracula (voz)', 'EduEinstein', 'EduElfo', 'EduF1', 'EduFast', 'EduFrankenstein', 'EduGhost', 'EduGhost (voz)', 'EduGrinch', 'EduKimi', 'EduMomia (voz)', 'EduMoon', 'EduNueces', 'EduOxxo', 'EduPiramyd', 'EduReno', 'EduRivet', 'EduScream', 'EduSnow', 'EduStrange', 'EduWitch (voz)', 'EduZombie']);
   assert.equal(unavailable, 0);
   assert.ok([...entries.keys()].every(id => /^[a-f0-9]{64}$/.test(id)));
 });
@@ -24,7 +24,7 @@ test('Incluye las mascotas importadas y la activa; deduplica por contenido y omi
   fs.writeFileSync(path.join(directory, 'invalid.aulapet'), 'archivo inválido');
   fs.writeFileSync(path.join(directory, 'duplicated.png'), original.images.open.bytes);
   const { entries, unavailable } = loadLibrary([path.join(root, 'pets'), directory], custom);
-  assert.equal(entries.size, 14); assert.equal(unavailable, 1);
+  assert.equal(entries.size, 30); assert.equal(unavailable, 1);
   assert.equal(entries.get(petId(custom)).pet.name, 'Mi personaje');
   assert.ok(![...entries.values()].some(entry => entry.pet.name === 'duplicated'));
 });

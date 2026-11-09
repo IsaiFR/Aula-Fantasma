@@ -24,7 +24,7 @@ El repositorio contiene el código fuente, los recursos, las mascotas y las prue
 
 | Tipo | Personajes | Archivos |
 | --- | --- | --- |
-| Voz y parpadeo | Catrina, EduCatrin, EduKimi, EduWitch, EduDracula, EduGhost y EduMomia | `pets/*-Voz.pet` |
+| Voz y parpadeo | EduDominos, EduOxxo, EduDonalds, EduFast, EduEinstein, EduRivet, EduStrange, EduMoon, EduDoom, EduClaus, EduCookie, EduReno, EduElfo, EduSnow, EduGrinch, EduNueces, Catrina, EduCatrin, EduKimi, EduWitch, EduDracula, EduGhost y EduMomia | `pets/*-Voz.pet` |
 | Recorrido y animación | EduGhost, EduScream, EduFrankenstein, EduZombie, EduPiramyd y EduF1 | `pets/*.aulapet` |
 
 Cada personaje tiene su propio comportamiento. Por ejemplo, EduZombie resucita desde una lápida, EduFrankenstein despierta con un rayo y EduF1 recorre la pantalla con ruedas animadas. La versión 1.17.0 incorpora a **Catrina** como mascota de voz.
@@ -243,3 +243,99 @@ Recursos y prompts de imagegen: `docs/educatrin-generation.md`. Prueba del porta
 Mascota de voz basada en la gatita Catrina de magenta. Disponible como **Catrina** en **Elegir mascota de voz**. Abre la boca con el micrófono y parpadea en silencio y hablando. Conserva sombrero, flores, velo, vestido, joyas, maquillaje y transparencia, con los controles de audio actuales. Archivo autocontenido: `pets/Catrina-Voz.pet`. La pose de reposo conserva el PNG original.
 
 Recursos y prompts de imagegen: `docs/catrina-generation.md`. Prueba aislada del portable: `npm.cmd run smoke -- --packaged --catrina`.
+
+## EduNueces
+
+Mascota de voz basada en el gato cascanueces con uniforme rojo, azul y dorado. Disponible como **EduNueces** en **Elegir mascota de voz**. Abre la boca al detectar el micrófono y parpadea en silencio y al hablar. El reposo conserva la imagen original; no incluye acciones especiales. Archivo autocontenido: `pets/EduNueces-Voz.pet`.
+
+Recursos y prompts: `docs/edunueces-generation.md`. Prueba aislada del portable: `npm.cmd run smoke -- --packaged --edunueces`.
+
+## EduGrinch
+
+Mascota de voz basada en el gato verde con lentes y traje de Santa. Disponible como **EduGrinch** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea tanto en silencio como al hablar. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduGrinch-Voz.pet`.
+
+Recursos y prompts: `docs/edugrinch-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edugrinch`.
+
+## EduSnow
+
+Mascota de voz basada en el gato de nieve con sombrero, lentes, nariz de zanahoria y bufanda roja. Disponible como **EduSnow** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduSnow-Voz.pet`.
+
+Recursos y prompts: `docs/edusnow-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edusnow`.
+
+## EduElfo
+
+Mascota de voz basada en el gato elfo de traje verde, collar rojo y cascabeles dorados. Disponible como **EduElfo** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduElfo-Voz.pet`.
+
+Recursos y prompts: `docs/eduelfo-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --eduelfo`.
+
+## EduReno
+
+Mascota de voz basada en el gato con astas de reno, nariz roja, arnés y cascabel dorado. Disponible como **EduReno** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduReno-Voz.pet`.
+
+Recursos y prompts: `docs/edureno-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edureno`.
+
+## EduCookie
+
+Mascota de voz basada en la galleta de gato con glaseado, lentes, moño rojo y dulces. Disponible como **EduCookie** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduCookie-Voz.pet`.
+
+Recursos y prompts: `docs/educookie-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --educookie`.
+
+## EduClaus
+
+Mascota de voz basada en el gato Santa con barba blanca y saco de juguetes. Disponible como **EduClaus** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo, el saco y sus juguetes. Sin acciones especiales. Paquete autocontenido: `pets/EduClaus-Voz.pet`.
+
+Recursos y prompts: `docs/educlaus-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --educlaus`.
+
+## EduDoom
+
+Mascota de voz basada en el gato con máscara metálica, armadura plateada y capa verde. Disponible como **EduDoom** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo. Sin acciones especiales. Paquete autocontenido: `pets/EduDoom-Voz.pet`.
+
+Recursos y prompts: `docs/edudoom-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edudoom`.
+
+## EduMoon
+
+Mascota de voz basada en el gato con capucha blanca, vendajes y adornos de luna dorados. Disponible como **EduMoon** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo. Sin acciones especiales. Paquete autocontenido: `pets/EduMoon-Voz.pet`.
+
+Recursos y prompts: `docs/edumoon-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edumoon`.
+
+## EduStrange
+
+Mascota de voz basada en el gato con capa roja, túnica azul, amuleto y círculo mágico naranja. Disponible como **EduStrange** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y mantiene el círculo mágico original. Sin acciones especiales. Paquete autocontenido: `pets/EduStrange-Voz.pet`.
+
+Recursos y prompts: `docs/edustrange-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edustrange`.
+
+## EduRivet
+
+Mascota de voz basada en la gatita blanca y lavanda con gafas sobre la frente, bufanda naranja, equipo y robot amarillo en la mochila. Nombre solicitado: **EduRivet**, aunque el archivo de entrada se llama `EduKit.png`. Disponible en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva el robot y la imagen original en reposo. Sin acciones especiales. Paquete autocontenido: `pets/EduRivet-Voz.pet`.
+
+Recursos y prompts: `docs/edurivet-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edurivet`.
+
+### EduEinstein
+
+`pets/EduEinstein-Voz.pet` usa la imagen `EduAlbert.png` con el nombre solicitado **EduEinstein**. Solo habla con el micrófono y parpadea. Se retiró el fondo negro para obtener transparencia; las expresiones conservan el cabello, los lentes y el traje de la base recortada.
+
+Recursos y prompts: `docs/edueinstein-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edueinstein`.
+
+## EduFast
+
+Mascota de voz con traje rojo de piloto y casco. Disponible como **EduFast** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. Conserva el original en reposo, el traje, sus logos y el casco. Sin acciones especiales. Paquete autocontenido: `pets/EduFast-Voz.pet`.
+
+Recursos y prompts: `docs/edufast-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edufast`.
+
+## EduDonalds
+
+Mascota de voz con uniforme rojo y amarillo, gorra y diadema con micrófono. Disponible como **EduDonalds** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. El cuadriculado del original se retiró para obtener transparencia. Conserva los accesorios y el uniforme de la base recortada. Sin acciones especiales. Paquete autocontenido: `pets/EduDonalds-Voz.pet`.
+
+Recursos y prompts: `docs/edudonalds-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edudonalds`.
+
+## EduOxxo
+
+Mascota de voz con gorra y uniforme de OXXO, y un gafete con el logo y el nombre **EduOxxo**, del estilo del gafete de EduDonalds. Disponible en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. La base tiene fondo transparente; el gafete, la gorra y el uniforme permanecen fijos en las cuatro poses. Sin acciones especiales. Paquete autocontenido: `pets/EduOxxo-Voz.pet`.
+
+Recursos y prompts: `docs/eduoxxo-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --eduoxxo`.
+
+## EduDominos
+
+Mascota de voz con gorra y uniforme de Domino’s, y gafete con el logo y el nombre **EduCat**. El nombre del personaje en **Elegir mascota de voz** es **EduDominos**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. La base tiene fondo transparente; gafete, gorra y uniforme permanecen fijos en las cuatro poses. Sin acciones especiales. Paquete autocontenido: `pets/EduDominos-Voz.pet`.
+
+Recursos y prompts: `docs/edudominos-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edudominos`.
