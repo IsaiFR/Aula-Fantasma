@@ -8,13 +8,18 @@ module.exports=async function(c) {
   const waitOpacity=async (opacity,phase)=>wait(async()=> (await Promise.all(views.map(v=>v.webContents.executeJavaScript(inspect)))).every(s=>Math.abs(s.opacity-opacity)<.001 && s.phase===phase),`Transparencia ${phase}`);
   await js('window.aula.editType("voice")');
   checks.ghostReplacesOpacityControls=await js(`!document.getElementById('ghost-opacity-card').hidden && document.getElementById('manual-opacity-controls').hidden && document.getElementById('opacity').disabled`);
-  checks.ghostControlsBelowObs=await js(`(() => {const card=document.getElementById('ghost-opacity-card'),obs=document.querySelector('.obs-card');return card.parentElement===obs.parentElement && card.getBoundingClientRect().top>=obs.getBoundingClientRect().bottom;})()`);
+  checks.ghostControlsInVoiceInspector = await js(`(() => {
+    const card = document.getElementById('ghost-opacity-card');
+    return card.closest('#pet-settings')?.hidden === false
+      && document.getElementById('output-settings').hidden
+      && document.getElementById('edit-voice').getAttribute('aria-pressed') === 'true';
+  })()`);
   await js('window.aula.setSettings({paused:true,opacity:20,ghostSolidSeconds:2,ghostFadedSeconds:2},"voice")');
   await js(`(() => {const s=document.getElementById('ghostSolidSeconds-value');s.value='1';s.dispatchEvent(new Event('change',{bubbles:true}));const f=document.getElementById('ghostFadedSeconds');f.value='1';f.dispatchEvent(new Event('input',{bubbles:true}));})()`);
   await wait(()=>c.snapshot().settings.ghostSolidSeconds===1 && c.snapshot().settings.ghostFadedSeconds===1,'Controles de tiempo');
   checks.ghostSecondsControls=await js(`document.getElementById('ghostSolidSeconds').value==='1' && document.getElementById('ghostFadedSeconds-value').value==='1'`);
   const base=motion.elapsed;
-  for(const [time,opacity,phase] of [[0,1,'solid'],[1.4,.875,'fading-out'],[1.9,.75,'faded'],[3.2,.875,'fading-in'],[3.6,1,'solid']]) {
+  for(const [time,opacity,phase] of [[0,1,'solid'],[1.4,.875,'fading-out'],[1.9,.75,'faded'],[3.2,.875,'fading-in'],[3.61,1,'solid']]) {
     motion.elapsed=base+time;notify();await waitOpacity(opacity,phase);
   }
   checks.ghostOpacitySynchronizedOnAllSurfaces=true;

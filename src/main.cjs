@@ -16,6 +16,8 @@ const { VoiceGate } = require('./voice.cjs');
 const { canvasInfo, isCanvasFormat } = require('./canvas.cjs');
 const { ghostOpacityFrame } = require('./ghost-opacity.cjs');
 const { draculaBatFrame } = require('./dracula-bat.cjs');
+const { Countdown, DEFAULT_COUNTDOWN } = require('./countdown.cjs');
+const countdown = new Countdown();
 
 const root = path.join(__dirname, '..');
 const webRoot = path.join(root, 'web');
@@ -42,7 +44,7 @@ function voiceFrame(candidate, simulation, suffix = '', preview = false) {
     ...(preview ? { speaking: simulation.elapsed % 3 < 1.2, level: 0 } : voiceGate.frame(performance.now(), { ...voiceSettings, micEnabled: microphoneConfig().enabled && micStatus === 'active' })),
     blinking: simulation.blinkRemaining > 0,
     status: micStatus,
-    urls: Object.fromEntries([['open', 'asset'], ['closed', 'asset-closed'], ['talking', 'asset-talking'], ['talkingClosed', 'asset-talking-closed'], ['bat', 'asset-bat'], ['batOpen', 'asset-bat-open'], ['batClosed', 'asset-bat-closed'], ['batTalkingClosed', 'asset-bat-talking-closed']].map(([kind, route]) => [kind, candidate.images[kind] ? `/${route}${suffix}` : null]))
+    urls: Object.fromEntries([['open', 'asset'], ['closed', 'asset-closed'], ['talking', 'asset-talking'], ['talkingClosed', 'asset-talking-closed'], ['bat', 'asset-bat'], ['batOpen', 'asset-bat-open'], ['batClosed', 'asset-bat-closed'], ['batTalkingClosed', 'asset-bat-talking-closed'], ['mist', 'asset-mist']].map(([kind, route]) => [kind, candidate.images[kind] ? `/${route}${suffix}` : null]))
   };
 }
 let quitting = false;
@@ -150,6 +152,7 @@ function activatePet(candidate, persist = true, applyPreset = true) {
 }
 
 function loadPreferences() {
+  countdown.stop(); countdown.configure(DEFAULT_COUNTDOWN);
   canvasFormat = '16:9'; canvasProfiles = {};
   canvasPetCache.clear();
   fs.mkdirSync(paths().pets, { recursive: true });
@@ -158,6 +161,7 @@ function loadPreferences() {
   activatePet(builtinPet(), false);
   try {
     let saved = JSON.parse(fs.readFileSync(paths().settings, 'utf8'));
+    countdown.configure(saved.countdown);
     if (saved.schemaVersion === 5) {
       canvasFormat = isCanvasFormat(saved.canvasFormat) ? saved.canvasFormat : '16:9';
       for (const format of ['16:9', '9:16']) if (saved.canvasProfiles?.[format] && typeof saved.canvasProfiles[format] === 'object') canvasProfiles[format] = saved.canvasProfiles[format];
@@ -266,7 +270,7 @@ function savePreferences() {
   const temporary = `${file}.tmp`;
   try {
     canvasProfiles[canvasFormat] = captureCanvasProfile();
-    fs.writeFileSync(temporary, JSON.stringify({ ...captureCanvasProfile(), schemaVersion: 5, canvasFormat, canvasProfiles }, null, 2));
+    fs.writeFileSync(temporary, JSON.stringify({ ...captureCanvasProfile(), schemaVersion: 5, canvasFormat, canvasProfiles, countdown: countdown.config }, null, 2));
     fs.renameSync(temporary, file);
   } catch (error) { console.error('No se pudieron guardar las preferencias:', error.message); }
 }
@@ -291,6 +295,7 @@ function selectedDisplay() {
 function getFrame() {
   const frame = motion.frame(settings);
   return {
+    countdown: countdown.frame(canvasInfo(canvasFormat)),
     ...frame, settings: { ...settings, desktopEnabled: settings.desktopEnabled && settings.companionEnabled, obsEnabled: settings.obsEnabled && settings.companionEnabled },
     assetUrl: `/asset?v=${petRevision}`,
     closedAssetUrl: pet.images.closed ? `/asset-closed?v=${petRevision}` : null,
@@ -324,6 +329,7 @@ function getVoiceFrame() {
 function snapshot() {
   const candidate = currentPet(), selectedSettings = currentSettings();
   return {
+    countdown: countdown.frame(canvasInfo(canvasFormat)),
     activePetId: petId(candidate), activeType, canvas: canvasInfo(canvasFormat),
     companions: { voice: { id: petId(voicePet), name: voicePet.name, enabled: settings.voiceEnabled }, companion: { id: petId(pet), name: pet.name, enabled: settings.companionEnabled } },
     settings: selectedSettings, displays: displays(), obsUrl: `${server?.url || ''}/overlay`,
@@ -369,14 +375,14 @@ function createDesktop() {
   // Si se captura el monitor completo, la mascota llega a OBS por su fuente dedicada.
   desktop.setContentProtection(true);
   secureWindow(desktop);
-  desktop.once('ready-to-show', () => { if (settings.desktopEnabled && !smoke) desktop.showInactive(); });
+  desktop.once('ready-to-show', () => { if ((settings.desktopEnabled || countdown.config.desktopEnabled) && !smoke) desktop.showInactive(); });
   desktop.loadURL(`${server.url}/overlay?surface=desktop`);
 }
 
 function applyDesktop() {
   if (!desktop || desktop.isDestroyed()) return;
   desktop.setBounds(selectedDisplay().bounds);
-  if (settings.desktopEnabled && !smoke) desktop.showInactive(); else desktop.hide();
+  if ((settings.desktopEnabled || countdown.config.desktopEnabled) && !smoke) desktop.showInactive(); else desktop.hide();
 }
 
 function showPanel() {
@@ -470,6 +476,14 @@ function installIpc() {
     return handler(...args);
   });
   handle('state', snapshot);
+  handle('countdown', (action, patch) => {
+    if (action === 'configure') { countdown.configure(patch); applyDesktop(); scheduleSave(); }
+    else if (action === 'start') countdown.start();
+    else if (action === 'stop') countdown.stop();
+    else if (action === 'position' && !countdown.frame().active) countdown.togglePosition();
+    else throw new Error('Acción de temporizador no válida.');
+    notify(); return snapshot();
+  });
   handle('canvas', changeCanvasFormat);
   handle('edit-type', type => {
     if (!['voice', 'companion'].includes(type)) throw new Error('Tipo de mascota no válido.');
@@ -539,8 +553,8 @@ async function start() {
   } });
   createDesktop();
   panel = new BrowserWindow({
-    width: 1080, height: 880, minWidth: 880, minHeight: 680, show: false,
-    title: 'Aula Fantasma', backgroundColor: '#111019', autoHideMenuBar: true,
+    width: 1080, height: 880, minWidth: 720, minHeight: 600, show: false,
+    title: 'Aula Fantasma', backgroundColor: '#f6f4f8', autoHideMenuBar: true,
     icon: path.join(root, 'assets', 'app-icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, backgroundThrottling: !smoke, offscreen: smoke }
   });
@@ -584,7 +598,17 @@ async function start() {
   notify();
   console.log(`OBS_URL=${server.url}/overlay`);
   if (smoke) {
-    if (process.argv.includes('--smoke-vehicle')) {
+    if (process.argv.includes('--smoke-countdown')) {
+      const checks = await require('./countdown-smoke.cjs')({ BrowserWindow, root, smokeRoot, panel, desktop, countdown, notify, server, secureWindow, savePreferences, loadPreferences });
+      fs.writeFileSync(path.join(smokeRoot, 'countdown-result.json'), JSON.stringify({ checks, rendererErrors }, null, 2));
+      console.log('COUNTDOWN_SMOKE_RESULT=' + JSON.stringify({ checks, rendererErrors }));
+      app.exit(Object.values(checks).every(Boolean) && rendererErrors.length === 0 ? 0 : 1);
+    } else if (process.argv.includes('--smoke-cuellilargo')) {
+      const checks = await require('./cuellilargo-smoke.cjs')({ BrowserWindow, root, smokeRoot, panel, desktop, motion, parsePet, activatePet, changeSettings, getFrame, snapshot, notify, server });
+      fs.writeFileSync(path.join(smokeRoot,'cuellilargo-result.json'),JSON.stringify({checks,rendererErrors},null,2));
+      console.log('CUELLILARGO_SMOKE_RESULT='+JSON.stringify({checks,rendererErrors}));
+      app.exit(Object.values(checks).every(Boolean) && rendererErrors.length===0 ? 0 : 1);
+    } else if (process.argv.includes('--smoke-vehicle')) {
       const checks = await require('./vehicle-smoke.cjs')({ BrowserWindow, root, smokeRoot, panel, desktop, motion, parsePet, activatePet, changeSettings, getFrame, snapshot, notify, server });
       fs.writeFileSync(path.join(smokeRoot,'vehicle-result.json'),JSON.stringify({checks,rendererErrors},null,2));
       console.log('VEHICLE_SMOKE_RESULT='+JSON.stringify({checks,rendererErrors}));
@@ -999,6 +1023,8 @@ async function runPanelSmoke() {
       }
       return false;
     };
+    await window.aula.setCanvasFormat('16:9');
+    await window.aula.editType('companion');
     await window.aula.setSettings({ mode: 'free', presenceEnabled: true, booEnabled: true });
     const numericKeys = ['size', 'speed', 'opacity', 'margin', 'booInterval', 'visibleSeconds', 'awaySeconds'];
     await wait(() => numericKeys.every(key => !$(key + '-value').disabled));
@@ -1153,13 +1179,40 @@ async function runSelectorSmoke() {
     });
     fs.writeFileSync(path.join(smokeRoot, name), image.toPNG());
   };
-  const columns = await panel.webContents.executeJavaScript(`(() => {
-    const greeting = document.querySelector('.character-card'), obs = document.querySelector('.obs-card');
-    const g = greeting.getBoundingClientRect(), o = obs.getBoundingClientRect();
-    return !document.querySelector('.pet-card') && greeting.closest('.visual-column') && g.top >= o.bottom && Math.abs(g.width - o.width) < 1;
+  const js = code => panel.webContents.executeJavaScript(code);
+  const compactSize = panel.getContentSize();
+  const columns = await js(`(() => {
+    const scene = document.querySelector('.visual-column').getBoundingClientRect();
+    const inspector = document.getElementById('inspector').getBoundingClientRect();
+    const layers = document.querySelector('.layer-board').getBoundingClientRect();
+    return scene.right <= inspector.left && layers.bottom < document.getElementById('preview').getBoundingClientRect().top
+      && layers.bottom < innerHeight && document.documentElement.scrollWidth <= innerWidth;
   })()`);
-  await panel.webContents.executeJavaScript(`document.querySelector('.companion-actions').scrollIntoView({block:'end'}); true`);
+  await js('window.aula.setSettings({voiceEnabled:true, companionEnabled:true, obsEnabled:true}, "companion")');
+  const thumbnailsLoaded = await waitPanel(`['voice','companion'].every(type => document.getElementById(type + '-thumbnail').naturalWidth > 0)`);
+  await js('document.getElementById("edit-voice").click(); true');
+  const voiceInspector = await waitPanel(`!document.getElementById('voice-card').hidden && !document.getElementById('pet-settings').hidden && document.getElementById('edit-voice').getAttribute('aria-pressed') === 'true'`);
+  await js('document.getElementById("edit-outputs").click(); true');
+  const outputsInspector = await waitPanel(`!document.getElementById('output-settings').hidden && document.getElementById('pet-settings').hidden && document.getElementById('obs-url').value.startsWith('http://127.0.0.1:')`);
+  await js('document.querySelector(".mode-toggle [data-setting=companionEnabled]").click(); true');
+  const independentToggle = await waitPanel('window.aula.getState().then(s => s.companions.voice.enabled && !s.companions.companion.enabled && !document.getElementById("output-settings").hidden)');
+  await js('window.aula.setSettings({companionEnabled:true}, "companion")');
+  await js('document.getElementById("edit-companion").click(); true');
+  await waitPanel(`!document.getElementById('choose-companion').hidden && !document.getElementById('pet-settings').hidden`);
+  await js('window.scrollTo(0, 0); true');
   await savePanel('panel-controls.png');
+  panel.setContentSize(760, 620);
+  const compactLayout = await waitPanel(`innerWidth >= 720 && innerWidth <= 820 && document.getElementById('inspector').getBoundingClientRect().top > document.querySelector('.layer-board').getBoundingClientRect().bottom && document.documentElement.scrollWidth <= innerWidth`);
+  await js('document.getElementById("canvas-portrait").click(); true');
+  const portraitPreview = await waitPanel(`(() => {
+    const stage = document.getElementById('preview'), dimensions = stage.getBoundingClientRect();
+    return stage.classList.contains('portrait') && Math.abs(dimensions.width / dimensions.height - 9 / 16) < .01;
+  })()`);
+  await js('document.getElementById("preview-background").click(); true');
+  const lightPreview = await waitPanel(`document.getElementById('preview').classList.contains('light')`);
+  await savePanel('panel-portrait-compact.png');
+  await js('document.getElementById("preview-background").click(); window.aula.setCanvasFormat("16:9")');
+  panel.setContentSize(...compactSize);
   const beforeBrowse = JSON.stringify(settings), activeBeforeBrowse = petId(pet);
   await panel.webContents.executeJavaScript(`document.getElementById('choose-companion').click(); true`);
   const opensSelector = await waitPanel(`location.pathname === '/pets' && document.documentElement?.dataset.libraryReady === 'true'`);
@@ -1178,6 +1231,18 @@ async function runSelectorSmoke() {
   const browseKeepsSettings = JSON.stringify(settings) === beforeBrowse && petId(pet) === activeBeforeBrowse;
   const independentPreviews = server.stats().obs <= 1;
   if (opensSelector) await savePanel('pet-selector.png');
+  const searchWorks = opensSelector && await js(`(() => {
+    const search = document.getElementById('pet-search');
+    const show = value => {
+      search.value = value;
+      search.dispatchEvent(new Event('input', { bubbles: true }));
+      return [...document.querySelectorAll('.pet-choice:not([hidden]) h2')].map(item => item.textContent);
+    };
+    const matches = show('  éduscream  ');
+    const noMatches = show('sin-coincidencias').length === 0 && !document.getElementById('library-empty').hidden;
+    show('');
+    return matches.length === 1 && matches[0] === 'EduScream' && noMatches && document.getElementById('library-empty').hidden;
+  })()`);
   const invalidChoiceRejected = opensSelector && await panel.webContents.executeJavaScript(`window.aula.selectPet('../pets/EduGhost.aulapet').then(result => Boolean(result.error))`);
   const targetName = pet.name === 'EduScream' ? 'EduGhost' : 'EduScream';
   const targetId = petId(parsePet(fs.readFileSync(path.join(root, 'pets', targetName + '.aulapet'))));
@@ -1187,7 +1252,7 @@ async function runSelectorSmoke() {
   const catalogEntry = library.entries.get(petId(pet));
   const animationPreserved = selectsCharacter && JSON.stringify(pet.animation) === JSON.stringify(catalogEntry.pet.animation) && JSON.stringify(pet.behavior) === JSON.stringify(catalogEntry.pet.behavior);
   activatePet(initialPet, false); changeSettings(initialSettings);
-  return { columns: Boolean(columns), opensSelector, libraryNames, previewsLoaded, previewsAnimate, selectionMarked, browseKeepsSettings, independentPreviews, invalidChoiceRejected, returnsToPanel, selectsCharacter, animationPreserved };
+  return { columns, compactLayout, portraitPreview, lightPreview, thumbnailsLoaded, voiceInspector, outputsInspector, independentToggle, searchWorks, opensSelector, libraryNames, previewsLoaded, previewsAnimate, selectionMarked, browseKeepsSettings, independentPreviews, invalidChoiceRejected, returnsToPanel, selectsCharacter, animationPreserved };
 }
 
 app.on('before-quit', () => {

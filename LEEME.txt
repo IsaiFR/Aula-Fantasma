@@ -1,5 +1,30 @@
 AULA FANTASMA — Windows 10/11 x64
 
+CABINA DE CLASE
+Selecciona una capa para configurar su mascota o el cronómetro.
+En Cambiar mascota puedes buscar personajes o importar un archivo.
+Abre Salidas para activar OBS, copiar la URL y elegir un monitor.
+
+CRONÓMETRO PARA ACTIVIDADES
+Elige 1, 2, 5 o 10 min, usa los botones de -10 s / +10 s o escribe
+minutos:segundos (2:30) o segundos (150), y confirma con Enter.
+Iniciar cronómetro muestra 3, 2, 1 y comienza la cuenta: visible los primeros 5 s,
+oculta hasta los últimos 3 s, con campana de boxeo al quedar 10 s.
+Al acabar muestra ¡TIEMPO TERMINADO! animado durante 3 s y desaparece.
+La tarjeta Cronómetro conserva el tiempo restante al cambiar de capa.
+Posición en OBS y escritorio permite editar X (derecha) e Y (arriba), con origen en la
+esquina inferior izquierda. Mostrar posición permite ubicarlo antes.
+Comparte la fuente Navegador de las mascotas y usa texto negro en tarjeta clara.
+Activa También en mi escritorio para verlo sobre tus ventanas, sin
+bloquear clics, con los mismos avisos y posición relativa que en OBS.
+Funciona aunque las mascotas del escritorio estén ocultas. La pantalla se
+elige en Monitor del escritorio. La opción del temporizador se recuerda.
+Pausar u ocultar las mascotas no detiene el temporizador. Cancelar lo oculta.
+La duración y posición se recuerdan, sin iniciar una actividad al abrir.
+Actualiza la caché de la fuente Navegador de OBS después de actualizar.
+Activa Controlar audio vía OBS en esa fuente y ajusta su volumen en el
+mezclador. Para oírlo también tú, activa su monitorización de audio en OBS.
+
 1.11.0 — TRANSPARENCIA AUTOMÁTICA DE EDUGHOST DE VOZ
 Solo EduGhost .pet alterna entre 100% y 75%, con transiciones suaves.
 En Transparencia de EduGhost elige el tiempo de cada estado (1-600 s).

@@ -4,8 +4,11 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'; frame-src 'self'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'";
+const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; connect-src 'self'; frame-src 'self'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'";
 const ROUTES = {
+  '/countdown.js': ['countdown.js', 'text/javascript; charset=utf-8'],
+  '/countdown.css': ['countdown.css', 'text/css; charset=utf-8'],
+  '/boxing-bell.wav': ['boxing-bell.wav', 'audio/wav'],
   '/microphone': ['microphone.html', 'text/html; charset=utf-8'],
   '/microphone.js': ['microphone.js', 'text/javascript; charset=utf-8'],
   '/voice.js': ['voice.js', 'text/javascript; charset=utf-8'],
@@ -69,7 +72,7 @@ async function startServer({ webRoot, getFrame, getVoiceFrame = () => null, getA
       res.end(JSON.stringify(url.searchParams.get('slot') === 'voice' ? getVoiceFrame() : getFrame())); return;
     }
     let file, mime;
-    const assetRoutes = { '/asset-bat-open': 'batOpen', '/asset-bat-closed': 'batClosed', '/asset-bat-talking-closed': 'batTalkingClosed', '/asset-bat': 'bat', '/asset': 'open', '/asset-closed': 'closed', '/asset-talking': 'talking', '/asset-talking-closed': 'talkingClosed', '/asset-atlas': 'atlas', '/asset-limb': 'limb', '/asset-walk': 'walk', '/asset-greeting': 'greeting', '/asset-frames': 'frames', '/asset-cycle': 'cycle' };
+    const assetRoutes = { '/asset-mist': 'mist', '/asset-bat-open': 'batOpen', '/asset-bat-closed': 'batClosed', '/asset-bat-talking-closed': 'batTalkingClosed', '/asset-bat': 'bat', '/asset': 'open', '/asset-closed': 'closed', '/asset-talking': 'talking', '/asset-talking-closed': 'talkingClosed', '/asset-atlas': 'atlas', '/asset-limb': 'limb', '/asset-walk': 'walk', '/asset-greeting': 'greeting', '/asset-frames': 'frames', '/asset-cycle': 'cycle' };
     if (assetRoutes[url.pathname]) {
       const asset = getAsset(assetRoutes[url.pathname], url.searchParams.get('pet'), url.searchParams.get('slot'));
       if (!asset) { res.writeHead(404).end(); return; }

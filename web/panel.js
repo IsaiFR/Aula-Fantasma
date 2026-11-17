@@ -7,14 +7,80 @@
   let displayKey = '';
   let devicesKey = '';
   let settingsQueue = Promise.resolve();
-  function fitPortraitPreview() {
-    const stage = $('preview');
-    if (!stage.classList.contains('portrait')) return;
-    const top = stage.getBoundingClientRect().top + scrollY;
-    stage.style.setProperty('--portrait-height', `${Math.max(200, innerHeight - top - 28)}px`);
-  }
-  window.addEventListener('resize', fitPortraitPreview);
+  let timerQueue = Promise.resolve();
+  let timerState;
+  let inspectorOverride = null;
+  let renderedInspector;
+  let inspectorRequest = 0;
+  const timerPresets = [...document.querySelectorAll('[data-timer-seconds]')];
+  const inspectorCopy = {
+    voice: ['Mascota de voz', 'Elige la esquina y calibra el micrófono.'],
+    companion: ['Mascota de recorrido', 'Configura el movimiento y el saludo.'],
+    timer: ['Cronómetro', 'Cuenta regresiva para las actividades.'],
+    outputs: ['Salidas', 'Conecta OBS y elige dónde aparecen tus mascotas.']
+  };
 
+  function renderInspector() {
+    if (!state) return;
+    const pane = inspectorOverride || state.activeType;
+    if (pane === renderedInspector) return;
+    renderedInspector = pane;
+    for (const key of Object.keys(inspectorCopy)) {
+      $('edit-' + key).setAttribute('aria-pressed', String(pane === key));
+      $('mode-' + key)?.classList.toggle('editing', pane === key);
+    }
+    const [title, description] = inspectorCopy[pane];
+    $('configuration-title').textContent = title;
+    $('configuration-description').textContent = description;
+    $('pet-settings').hidden = pane !== 'voice' && pane !== 'companion';
+    $('timer-settings').hidden = pane !== 'timer';
+    $('output-settings').hidden = pane !== 'outputs';
+    document.querySelector('.panel-body').scrollTop = 0;
+  }
+
+  function showInspectorOnCompactLayout() {
+    if (!matchMedia('(max-width: 820px)').matches) return;
+    $('configuration-title').focus({ preventScroll: true });
+    $('inspector').scrollIntoView({ block: 'start' });
+  }
+  function applyTimer(timer) {
+    if (!timer) return;
+    timerState = timer;
+    $('timer-desktop').checked = timer.desktopEnabled;
+    const format = window.AulaTime.formatTime;
+    if (document.activeElement !== $('timer-duration')) $('timer-duration').value = format(timer.seconds);
+    for (const key of ['x', 'y']) if (document.activeElement !== $(`timer-${key}`)) $(`timer-${key}`).value = String(timer[key]);
+    for (const id of ['timer-duration', 'timer-minus', 'timer-plus', 'timer-start', 'timer-position']) $(id).disabled = timer.active;
+    $('timer-minus').disabled ||= timer.seconds <= 10;
+    $('timer-plus').disabled ||= timer.seconds >= 5999;
+    $('timer-stop').disabled = !timer.active && timer.phase !== 'position';
+    $('timer-position').setAttribute('aria-pressed', String(timer.phase === 'position'));
+    $('timer-position').textContent = timer.phase === 'position' ? 'Ocultar posición' : 'Mostrar posición';
+    const { phase, seconds, remaining, ready, active, visible } = timer;
+    const running = phase === 'running';
+    const done = phase === 'finished' || phase === 'done';
+    const readout = format(running ? remaining : done ? 0 : seconds);
+    const display = phase === 'ready' ? String(ready) : readout;
+    const message = running ? (visible ? 'Visible en OBS' : 'Oculto en OBS · el tiempo sigue corriendo')
+      : ({ ready: 'La actividad está por iniciar', finished: '¡Tiempo terminado!', done: 'Actividad finalizada', position: 'Posición visible en la escena' })[phase] || 'Listo para iniciar';
+    const label = phase === 'ready' ? 'Preparación' : running || done ? 'Tiempo restante' : 'Duración';
+    if ($('timer-display-label').textContent !== label) $('timer-display-label').textContent = label;
+    if ($('timer-display').textContent !== display) $('timer-display').textContent = display;
+    $('timer-console').style.setProperty('--progress', (running ? 100 * remaining / seconds : done ? 0 : 100) + '%');
+    const layerStatus = done ? 'Finalizado' : phase === 'ready' ? 'Preparación' : readout;
+    if ($('timer-layer-state').textContent !== layerStatus) $('timer-layer-state').textContent = layerStatus;
+    $('mode-timer').dataset.active = String(active);
+    timerPresets.forEach(button => {
+      button.disabled = active;
+      button.setAttribute('aria-pressed', String(Number(button.dataset.timerSeconds) === seconds));
+    });
+    if ($('timer-status').textContent !== message) $('timer-status').textContent = message;
+  }
+  window.addEventListener('aula:countdown-frame', event => applyTimer(event.detail));
+  function timerAction(action, patch) {
+    timerQueue = timerQueue.then(() => window.aula.countdown(action, patch)).then(apply).catch(() => toast('No se pudo actualizar el temporizador.'));
+    return timerQueue;
+  }
   function toast(message) {
     $('toast').textContent = message;
     $('toast').classList.add('visible');
@@ -23,13 +89,17 @@
   }
   function apply(next) {
     state = next;
+    $('inspector').setAttribute('aria-busy', 'false');
+    applyTimer(next.countdown);
+    $('timer-x').max = Math.max(0, next.canvas.width - 320);
+    $('timer-y').max = Math.max(0, next.canvas.height - 156);
     const portrait = next.canvas.format === '9:16';
     $('preview').classList.toggle('portrait', portrait);
-    $('preview').style.aspectRatio = portrait ? '9 / 16' : '16 / 9';
     $('canvas-landscape').setAttribute('aria-pressed', String(!portrait));
     $('canvas-portrait').setAttribute('aria-pressed', String(portrait));
-    $('canvas-dimensions').textContent = `${next.canvas.width} × ${next.canvas.height} · ajustes guardados por formato`;
-    $('obs-dimensions').textContent = `Fuente Navegador ${next.canvas.format}: ${next.canvas.width} × ${next.canvas.height}. Crea una fuente distinta por formato.`;
+    const dimensions = next.canvas.width + ' × ' + next.canvas.height;
+    $('canvas-dimensions').textContent = dimensions;
+    $('obs-dimensions').textContent = 'Lienzo ' + next.canvas.format + ' · ' + dimensions + ' px. Usa una fuente por formato.';
     const isVoice = next.activeType === 'voice';
     const ghostOpacity = isVoice && Boolean(next.effects?.ghostOpacity);
     $('ghost-opacity-card').hidden = !ghostOpacity;
@@ -41,12 +111,20 @@
     $('draculaBatEnabled').disabled = !draculaBat;
     $('draculaSeconds').disabled = $('draculaBatSeconds').disabled = !draculaBat || !next.settings.draculaBatEnabled;
     for (const type of ['voice', 'companion']) {
-      $(`mode-${type}`).classList.toggle('editing', next.activeType === type);
-      $(`edit-${type}`).setAttribute('aria-pressed', String(next.activeType === type));
-      $(`${type}-choice-name`).textContent = next.companions[type].name;
+      const { name, id } = next.companions[type];
+      const assetUrl = '/asset?slot=' + type + '&v=' + encodeURIComponent(id);
+      $(type + '-choice-name').textContent = name;
+      $(type + '-choice-name').title = name;
+      const image = $(type + '-thumbnail');
+      if (image.getAttribute('src') !== assetUrl) image.src = assetUrl;
     }
-    $('configuration-title').textContent = isVoice ? 'Configurar voz en una esquina' : 'Configurar recorrido y saludo';
-    $('adjustment-label').textContent = isVoice ? 'TAMAÑO Y POSICIÓN' : 'EL RECORRIDO';
+    const selected = next.companions[next.activeType];
+    $('selected-pet-name').textContent = selected.name;
+    if ($('selected-pet-thumbnail').getAttribute('src') !== next.assetUrl) $('selected-pet-thumbnail').src = next.assetUrl;
+    $('choose-voice').hidden = !isVoice;
+    $('choose-companion').hidden = isVoice;
+    $('class-preset').hidden = isVoice;
+    $('adjustment-label').textContent = isVoice ? 'Tamaño y posición' : 'Recorrido y tamaño';
     $('corner-field').hidden = !isVoice;
     document.querySelector('.character-card').hidden = isVoice;
     document.querySelector('.presence-card').hidden = isVoice;
@@ -75,15 +153,15 @@
       else if (control.type !== 'number' || document.activeElement !== control) control.value = String(value);
     });
     if ($('monitor').selectedIndex === -1) $('monitor').value = 'primary';
-    $('pause').textContent = next.settings.paused ? 'Reanudar recorrido' : 'Pausar recorrido';
-    const enabled = next.settings.obsEnabled || next.settings.desktopEnabled;
-    $('motion-status').textContent = !enabled ? 'Oculto' : next.settings.paused ? 'En pausa' : next.settings.mode === 'still' ? 'En una esquina' : 'En movimiento';
+    $('pause').textContent = next.settings.paused ? 'Reanudar' : 'Pausar';
+    $('preview-status').textContent = !next.settings.obsEnabled ? 'Mascotas ocultas en OBS'
+      : !next.settings.voiceEnabled && !next.settings.companionEnabled ? 'Sin mascotas visibles' : 'Salida transparente';
     $('obs-url').value = next.obsUrl;
-    $('obs-status').textContent = next.connections > 0 ? `${next.connections} ${next.connections === 1 ? 'conexión' : 'conexiones'}` : 'Sin conectar';
+    $('obs-status').textContent = next.connections > 0 ? `${next.connections} ${next.connections === 1 ? 'conexión' : 'conexiones'}` : 'OBS sin conectar';
     $('obs-status').className = `badge ${next.connections ? 'connected' : 'neutral'}`;
     $('connection-detail').textContent = next.connections > 0
-      ? 'La fuente está conectada. Comprueba su visibilidad en la vista previa de OBS.'
-      : 'La dirección estará disponible mientras la app permanezca abierta.';
+      ? 'OBS está recibiendo la fuente.'
+      : 'La URL está disponible mientras Aula Fantasma esté abierta.';
     const patrol = Boolean(next.behavior.cycle?.reverseAfterRest);
     $('shortcut-warning').hidden = next.shortcutsAvailable;
     $('speed').disabled = next.settings.mode === 'still';
@@ -95,19 +173,22 @@
       control.disabled = $(control.dataset.setting).disabled;
     });
     const cycle = Boolean(next.behavior.cycle);
+    const walkingOnly = cycle && next.behavior.cycle.sequence.every(entry => entry.stage === 'walk');
     $('boo-now').disabled = next.settings.paused || (!next.settings.booEnabled && !cycle);
     $('greeting-toggle-label').closest('label').hidden = cycle;
     $('booInterval').closest('details').hidden = cycle;
     $('patrol-description').hidden = !patrol;
-    $('boo-now').closest('.character-card').querySelector('.eyebrow').textContent = patrol ? 'CAMINATA' : cycle ? 'RESURRECCIÓN' : 'EL SALUDO';
+    $('boo-now').closest('.character-card').querySelector('.eyebrow').textContent = patrol || walkingOnly ? 'CAMINATA' : cycle ? 'RESURRECCIÓN' : 'EL SALUDO';
     const greeting = next.behavior.greeting.text;
     $('greeting-toggle-label').textContent = `Detenerse y decir ${greeting}`;
-    $('boo-now').textContent = patrol ? 'Reiniciar ciclo' : cycle ? 'Resucitar ahora' : `${greeting} ahora`;
+    $('boo-now').textContent = patrol || walkingOnly ? 'Reiniciar ciclo' : cycle ? 'Resucitar ahora' : `${greeting} ahora`;
     $('boo-now').title = next.settings.paused ? 'Reanuda el recorrido para probar el saludo.' : cycle ? (next.behavior.cycle.sequence.some(entry=>entry.stage==='lightning') ? 'Adelantar el rayo y la resurrección.' : 'Adelantar la salida de la tierra.') : 'Detenerse y mostrar el globo.';
-    fitPortraitPreview();
+    if (walkingOnly) $('boo-now').title = 'Volver al primer paso de la caminata.';
+    renderInspector();
   }
 
   function update(patch) {
+    if (!state) return;
     const type = state.activeType;
     settingsQueue = settingsQueue.then(() => window.aula.setSettings(patch, type)).then(apply).catch(() => toast('No se pudo aplicar el cambio. Inténtalo otra vez.'));
   }
@@ -131,6 +212,44 @@
     });
   });
   $('pause').addEventListener('click', () => update({ paused: !state.settings.paused }));
+  timerPresets.forEach(button => button.addEventListener('click', () => timerAction('configure', { seconds: Number(button.dataset.timerSeconds) })));
+  $('preview-background').addEventListener('click', () => {
+    const light = $('preview').classList.toggle('light');
+    $('preview-background').setAttribute('aria-pressed', String(light));
+  });
+  for (const pane of ['timer', 'outputs']) $('edit-' + pane).addEventListener('click', () => {
+    inspectorRequest++;
+    inspectorOverride = pane;
+    renderInspector();
+    showInspectorOnCompactLayout();
+  });
+  $('timer-duration').addEventListener('change', () => {
+    const seconds = window.AulaTime.parseTime($('timer-duration').value);
+    if (!Number.isFinite(seconds) || seconds < 10 || seconds > 5999) {
+      $('timer-duration').value = window.AulaTime.formatTime(timerState.seconds);
+      toast('Escribe un tiempo entre 0:10 y 99:59, o entre 10 y 5999 segundos.');
+      return;
+    }
+    timerAction('configure', { seconds });
+  });
+  for (const id of ['timer-duration', 'timer-x', 'timer-y']) $(id).addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      $(id).value = id === 'timer-duration' ? window.AulaTime.formatTime(timerState.seconds) : timerState[id.slice(-1)];
+    }
+    if (event.key === 'Enter' || event.key === 'Escape') { event.preventDefault(); $(id).blur(); }
+  });
+  for (const [id, delta] of [['timer-minus', -10], ['timer-plus', 10]]) $(id).addEventListener('click', () => {
+    timerQueue = timerQueue.then(() => window.aula.countdown('configure', { seconds: Math.min(5999, Math.max(10, timerState.seconds + delta)) })).then(apply).catch(() => toast('No se pudo cambiar la duración.'));
+  });
+  for (const key of ['x', 'y']) $(`timer-${key}`).addEventListener('change', () => {
+    const input = $(`timer-${key}`), value = input.valueAsNumber;
+    if (!Number.isFinite(value)) { input.value = String(timerState[key]); return; }
+    const clamped = Math.round(Math.max(0, Math.min(Number(input.max), value)));
+    input.value = String(clamped);
+    timerAction('configure', { [key]: clamped });
+  });
+  for (const action of ['start', 'stop', 'position']) $(`timer-${action}`).addEventListener('click', () => timerAction(action));
+  $('timer-desktop').addEventListener('change', () => timerAction('configure', { desktopEnabled: $('timer-desktop').checked }));
   $('class-preset').addEventListener('click', () => {
     update({ mode: 'edges', size: 140, speed: 45, margin: 24, paused: false });
     toast('Modo clase: recorrido tranquilo por los bordes.');
@@ -151,8 +270,20 @@
   action('export-pet', async () => { const result = await window.aula.exportPet(); if (result.error) toast(result.error); else if (result.saved) toast(`Mascota guardada: ${result.name}`); });
   action('mic-retry', async () => { await window.aula.setSettings({ micEnabled: false }); apply(await window.aula.setSettings({ micEnabled: true })); });
   for (const type of ['voice', 'companion']) {
-    action(`edit-${type}`, async () => { await settingsQueue; apply(await window.aula.editType(type)); });
-    action(`choose-${type}`, async () => { await settingsQueue; await window.aula.editType(type); await window.aula.openPetSelector(); });
+    action('edit-' + type, async () => {
+      const request = ++inspectorRequest;
+      const operation = settingsQueue.then(() => window.aula.editType(type));
+      settingsQueue = operation.catch(() => {});
+      const next = await operation;
+      if (request === inspectorRequest) inspectorOverride = null;
+      apply(next);
+      if (request === inspectorRequest) showInspectorOnCompactLayout();
+    });
+    action('choose-' + type, async () => {
+      await settingsQueue;
+      await window.aula.editType(type);
+      await window.aula.openPetSelector();
+    });
   }
   for (const [id, format] of [['canvas-landscape', '16:9'], ['canvas-portrait', '9:16']]) action(id, async () => {
     const operation = settingsQueue.then(() => window.aula.setCanvasFormat(format)).then(apply);
@@ -160,5 +291,11 @@
     await operation;
   });
   window.aula.onState(apply);
-  window.aula.getState().then(apply).catch(() => toast('No se pudo cargar la app. Cierra y vuelve a abrir Aula Fantasma.'));
+  window.aula.getState().then(next => {
+    apply(next);
+    if (sessionStorage.getItem('focus-layer-on-return')) {
+      sessionStorage.removeItem('focus-layer-on-return');
+      $('edit-' + next.activeType).focus({ preventScroll: true });
+    }
+  }).catch(() => toast('No se pudo cargar la app. Cierra y vuelve a abrir Aula Fantasma.'));
 })();

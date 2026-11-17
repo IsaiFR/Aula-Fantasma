@@ -64,7 +64,7 @@
       const n = Math.max(32, Math.min(800, Math.ceil(this.body.clientWidth * (devicePixelRatio || 1))));
       const key = JSON.stringify([n, this.assets, pose, frame.facing]);
       if (key !== this.key) {
-        if (this.canvas.width !== n) this.canvas.width = this.canvas.height = n;
+        if (this.canvas.width !== n || this.canvas.height !== n) this.canvas.width = this.canvas.height = n;
         const ctx = this.context; ctx.clearRect(0, 0, n, n); ctx.save();
         // El texto de los ciclos está integrado en la imagen: conservar su lectura.
         if (config.mirror && frame.facing < 0 && !frame.cycle?.text) { ctx.translate(n, 0); ctx.scale(-1, 1); }

@@ -124,6 +124,38 @@ module.exports = async function(c) {
     Object.assign(checks,await require('./edudominos-smoke.cjs')({...c,obs,views,wait}));
     obs.destroy();return checks;
   }
+  if (process.argv.includes('--smoke-edureturnal')) {
+    Object.assign(checks,await require('./edureturnal-smoke.cjs')({...c,obs,views,wait}));
+    obs.destroy();return checks;
+  }
+  if (process.argv.includes('--smoke-edupsycho')) {
+    Object.assign(checks,await require('./edupsycho-smoke.cjs')({...c,obs,views,wait}));
+    obs.destroy();return checks;
+  }
+  if (process.argv.includes('--smoke-edualloy')) {
+    Object.assign(checks,await require('./edualloy-smoke.cjs')({...c,obs,views,wait}));
+    obs.destroy();return checks;
+  }
+  if (process.argv.includes('--smoke-edubot')) {
+    Object.assign(checks,await require('./edubot-smoke.cjs')({...c,obs,views,wait}));
+    obs.destroy();return checks;
+  }
+  if (process.argv.includes('--smoke-edufallout')) {
+    Object.assign(checks,await require('./edufallout-smoke.cjs')({...c,obs,views,wait}));
+    obs.destroy();return checks;
+  }
+  if (process.argv.includes('--smoke-educage')) {
+    Object.assign(checks,await require('./educage-smoke.cjs')({...c,obs,views,wait}));
+    obs.destroy();return checks;
+  }
+  if (process.argv.includes('--smoke-eduzero')) {
+    Object.assign(checks, await require('./eduzero-smoke.cjs')({ ...c, obs, views, wait }));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-eduscorpion')) {
+    Object.assign(checks, await require('./eduscorpion-smoke.cjs')({ ...c, obs, views, wait }));
+    obs.destroy(); return checks;
+  }
   if (process.argv.includes('--smoke-dracula')) {
     Object.assign(checks,await require('./dracula-bat-smoke.cjs')({...c,obs,views,wait}));
     obs.destroy();return checks;

@@ -1,0 +1,10 @@
+#class-countdown { position: absolute; z-index: 10; width: 320px; height: 156px; box-sizing: border-box; padding: 17px 16px 12px; border: 2px solid #0003; border-radius: 22px; background: #fffffff0; box-shadow: 0 6px 24px #0002; color: #000; text-align: center; font-family: "Segoe UI", sans-serif; transform-origin: bottom left; pointer-events: none; }
+#class-countdown[hidden] { display: none !important; }
+#class-countdown .timer-caption { font-size: 15px; font-weight: 700; letter-spacing: 1.4px; line-height: 20px; }
+#class-countdown .timer-digits { font-size: 64px; font-weight: 700; line-height: 76px; font-variant-numeric: tabular-nums; }
+#class-countdown .timer-detail { color: #000; font-size: 13px; line-height: 20px; }
+#class-countdown[data-phase="finished"] { border-color: #0003; background: #e9f8eef5; animation: timer-finish .6s ease-out; }
+#class-countdown[data-phase="finished"] .timer-digits { animation: timer-check .8s ease-out; }
+@keyframes timer-finish { from { opacity: 0; filter: brightness(1.6); } to { opacity: 1; filter: brightness(1); } }
+@keyframes timer-check { from { transform: scale(.4) rotate(-25deg); } 65% { transform: scale(1.15) rotate(5deg); } to { transform: scale(1) rotate(0); } }
+@media (prefers-reduced-motion: reduce) { #class-countdown, #class-countdown .timer-digits { animation: none !important; } }

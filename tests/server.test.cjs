@@ -25,6 +25,21 @@ async function setup(t) {
   t.after(() => server.close()); return server;
 }
 
+test('Sirve el temporizador y su campana local con una política de audio del mismo origen', async t => {
+  const server = await setup(t);
+  for (const [route, mime] of [['/countdown.js', 'text/javascript'], ['/countdown.css', 'text/css'], ['/boxing-bell.wav', 'audio/wav']]) {
+    const response = await fetch(server.url + route);
+    assert.equal(response.status, 200); assert.ok(response.headers.get('content-type').startsWith(mime));
+    assert.match(response.headers.get('content-security-policy'), /media-src 'self'/);
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    if (route.endsWith('.wav')) {
+      const bytes = Buffer.from(await response.arrayBuffer());
+      assert.equal(bytes.toString('ascii', 0, 4), 'RIFF'); assert.equal(bytes.toString('ascii', 8, 12), 'WAVE');
+      assert.equal(bytes.readUInt32LE(24), 44100); assert.ok(bytes.length > 200000);
+    }
+  }
+});
+
 test('Las animaciones del selector son independientes y no cuentan como OBS; rechaza mascotas desconocidas', async t => {
   const id = 'a'.repeat(64), image = Buffer.from([1, 2, 3]);
   const server = await startServer({ webRoot: path.join(__dirname, '..', 'web'), getFrame: () => fixture,

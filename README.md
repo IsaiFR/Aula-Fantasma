@@ -19,25 +19,40 @@ El repositorio contiene el código fuente, los recursos, las mascotas y las prue
 - **Dos formatos de clase:** lienzos horizontal 16:9 y vertical 9:16, con preferencias visuales independientes.
 - **Personajes intercambiables:** paquetes autocontenidos `.pet` y `.aulapet`, importación de PNG/WebP/GIF y exportación para compartir mascotas.
 - **Controles de uso diario:** tamaño, velocidad, opacidad, pausa, visibilidad, bandeja del sistema y atajos de teclado.
+- **Temporizador discreto en OBS:** duración inicial de 2 minutos, edición por teclado o en pasos de 10 segundos, posición X/Y y avisos breves de inicio y final con campana.
 
 ## Mascotas incluidas
 
 | Tipo | Personajes | Archivos |
 | --- | --- | --- |
-| Voz y parpadeo | EduDominos, EduOxxo, EduDonalds, EduFast, EduEinstein, EduRivet, EduStrange, EduMoon, EduDoom, EduClaus, EduCookie, EduReno, EduElfo, EduSnow, EduGrinch, EduNueces, Catrina, EduCatrin, EduKimi, EduWitch, EduDracula, EduGhost y EduMomia | `pets/*-Voz.pet` |
-| Recorrido y animación | EduGhost, EduScream, EduFrankenstein, EduZombie, EduPiramyd y EduF1 | `pets/*.aulapet` |
+| Voz y parpadeo | EduScorpion, EduZero, EduCage, EduFallout, EduBot, EduAlloy, EduPsycho, EduReturnal, EduDominos, EduOxxo, EduDonalds, EduFast, EduEinstein, EduRivet, EduStrange, EduMoon, EduDoom, EduClaus, EduCookie, EduReno, EduElfo, EduSnow, EduGrinch, EduNueces, Catrina, EduCatrin, EduKimi, EduWitch, EduDracula, EduGhost y EduMomia | `pets/*-Voz.pet` |
+| Recorrido y animación | Cuellilargo, EduGhost, EduScream, EduFrankenstein, EduZombie, EduPiramyd y EduF1 | `pets/*.aulapet` |
 
 Cada personaje tiene su propio comportamiento. Por ejemplo, EduZombie resucita desde una lápida, EduFrankenstein despierta con un rayo y EduF1 recorre la pantalla con ruedas animadas. La versión 1.17.0 incorpora a **Catrina** como mascota de voz.
 
 ## Inicio rápido en OBS
 
 1. Abre `INICIAR-APP.cmd` desde la carpeta del portable.
-2. Elige tus mascotas y activa **En mis escenas de OBS**.
-3. Copia la dirección local que muestra el panel.
+2. Selecciona **Mascota de voz** o **Mascota de recorrido** y pulsa **Cambiar mascota**. Cada capa se muestra u oculta con su propio interruptor.
+3. Abre **Salidas**, activa **En mis escenas de OBS** y pulsa **Copiar URL**.
 4. En OBS Studio, añade una fuente **Navegador**, pega la dirección y usa **1920 × 1080** para horizontal o **1080 × 1920** para vertical.
 5. Coloca la fuente por encima de la cámara, las diapositivas o la captura, y mantén Aula Fantasma abierta durante la sesión.
 
-Para preparar ambos formatos, crea una fuente de navegador independiente por formato y cambia **Lienzo de la clase** en la aplicación al pasar entre ellos. La app no cambia automáticamente las escenas de OBS.
+Para preparar ambos formatos, crea una fuente de navegador independiente por formato y selecciona **16:9** o **9:16** sobre la vista previa al pasar entre ellos. La app no cambia automáticamente las escenas de OBS.
+
+## Temporizador de actividades
+
+En la capa **Cronómetro**, elige 1, 2, 5 o 10 minutos, usa **−10 s / +10 s** o escribe `2:30` o `150` para dos minutos y medio; confirma con Enter o al salir del campo. Admite de 10 segundos a 99:59. La duración queda bloqueada mientras está activo; **Cancelar** lo oculta y permite preparar otra actividad.
+
+Al pulsar **Iniciar cronómetro**, muestra una preparación **3, 2, 1**. Después comienza la duración elegida: se ve durante los primeros **5 segundos** (hasta `1:55` en una actividad de dos minutos), se oculta, suena una campana de tres golpes al quedar **10 segundos**, reaparece al quedar **3 segundos** y muestra **¡TIEMPO TERMINADO!** con una animación durante **3 segundos**. Luego vuelve a ocultarse. La tarjeta **Cronómetro** muestra el tiempo restante aunque abras los ajustes de otra capa.
+
+Abre **Posición en OBS y escritorio** para editar X e Y en píxeles del lienzo activo. `(0, 0)` es la esquina inferior izquierda del contador: X crece hacia la derecha y Y hacia arriba. **Mostrar posición** permite ubicarlo antes de empezar. El contador queda contenido dentro del lienzo horizontal o vertical. La duración y la posición se guardan; al abrir la app no se inicia ninguna cuenta automáticamente.
+
+El temporizador usa **texto negro sobre una tarjeta clara**. Se muestra en la **misma fuente Navegador** de las mascotas y en la vista previa del panel, con independencia de la pausa o visibilidad de las mascotas. Activa **También en mi escritorio** para verlo sobre tus ventanas, con la misma secuencia y posición relativa que en OBS, sin bloquear clics. Funciona aunque las mascotas del escritorio estén ocultas. Usa **Salidas → Monitor del escritorio** para elegir la pantalla; esta opción se guarda. Si la fuente ya estaba cargada, actualiza su caché en OBS una vez para cargar los controles nuevos.
+
+La campana se reproduce únicamente en la salida OBS; la vista previa del panel permanece en silencio. En las propiedades de la fuente Navegador, activa **Controlar audio vía OBS** para manejar su volumen desde el mezclador. Para escucharla también en tu equipo, configura la monitorización de esa fuente en las propiedades avanzadas de audio de OBS. Conserva la fuente activa durante la actividad para recibir el aviso. Cada fuente independiente reproduce su propio audio: reutiliza la misma fuente entre escenas del mismo formato.
+
+Validación específica del temporizador con preferencias aisladas: `npm.cmd run smoke -- --countdown` y `npm.cmd run smoke -- --packaged --countdown`. Estas pruebas verifican Electron y una fuente de navegador simulada; no sustituyen comprobar la mezcla de sonido en una escena real de OBS.
 
 ## Guías y referencias del proyecto
 
@@ -52,7 +67,7 @@ Las siguientes secciones detallan la instalación desde el código fuente, los c
 
 ## Abrir la app
 
-Ejecuta `INICIAR-APP.cmd` o `Aula Fantasma.exe` desde esta raíz. Antes de recompilar, usa **Salir de la app** en su panel o bandeja. La carpeta completa se puede copiar a otro equipo Windows x64. Consulta `GUIA-OBS.html`.
+Ejecuta `INICIAR-APP.cmd` o `Aula Fantasma.exe` desde esta raíz. Antes de recompilar, usa **Salir de Aula Fantasma** en el panel o **Salir** en la bandeja. La carpeta completa se puede copiar a otro equipo Windows x64. Consulta `GUIA-OBS.html`.
 
 Si la fuente de OBS ya estaba cargada, actualiza su caché una vez desde sus propiedades para que cargue los perfiles de mascota. Confirma que la URL coincida con la del panel.
 
@@ -83,7 +98,7 @@ Desde 1.9.1 se elimina el bloque redundante **Tu mascota**; los selectores perma
 
 ## Lienzos horizontal y vertical (1.10.0)
 
-En **Lienzo de la clase**, cambia con un clic entre **16:9 Horizontal** y **9:16 Vertical**. Cada uno recuerda sus mascotas, visibilidad, tamaños, esquina, recorrido, velocidad, saludo, apariciones y opacidad. El primer uso del otro formato toma los ajustes actuales como punto de partida; después conserva sus propios cambios. El micrófono y su sensibilidad son comunes, por lo que cambiar de lienzo no reinicia la captura. Ambos perfiles y el último formato se guardan al cerrar.
+Usa **16:9** y **9:16** sobre la vista previa para cambiar de formato. Cada uno recuerda sus mascotas, visibilidad, tamaños, esquina, recorrido, velocidad, saludo, apariciones y opacidad. El primer uso del otro formato toma los ajustes actuales como punto de partida; después conserva sus propios cambios. El micrófono y su sensibilidad son comunes, por lo que cambiar de lienzo no reinicia la captura. Ambos perfiles y el último formato se guardan al cerrar.
 
 La vista previa cambia de proporción y la referencia pasa de **1920 × 1080** a **1080 × 1920**. La misma URL local entrega la composición del formato activo. En OBS, crea dos fuentes Navegador independientes: una horizontal de **1920 × 1080** y otra vertical de **1080 × 1920**. Usa **Crear nueva**, con la misma URL, al preparar el otro formato. **Añadir existente** solo sirve entre escenas del mismo formato: comparte el ancho y alto de la fuente. Cambia el lienzo de la app al pasar entre tus escenas. La app no modifica automáticamente las escenas ni el tamaño de lienzo de OBS.
 
@@ -103,7 +118,7 @@ El reloj de voz sincroniza el efecto entre escritorio, panel y OBS. Continúa al
 
 ## Dos mascotas al mismo tiempo
 
-El panel tiene dos tarjetas independientes: **Voz en una esquina (.pet)** y **Recorrido y saludo (.aulapet)**. Cada tarjeta permite mostrar u ocultar esa mascota y abrir su propio selector; sus catálogos no se mezclan. Pulsa el nombre de la opción para configurar sus ajustes. Cambiar de opción en el panel solo cambia qué ajustes editas: ambas mascotas siguen funcionando.
+Las capas **Mascota de voz** y **Mascota de recorrido** tienen interruptores independientes. Selecciona una capa para editar sus ajustes y pulsa **Cambiar mascota** para abrir su biblioteca. Puedes buscar por nombre, ver la animación e importar archivos compatibles con la capa. Ambas mascotas pueden permanecer activas mientras editas.
 
 La mascota de voz mantiene una esquina fija (puedes elegir las cuatro) y tiene su propio tamaño, opacidad y micrófono. La de recorrido mantiene sus ajustes de movimiento, apariciones y saludo. Las salidas **En mi escritorio**, **En mis escenas de OBS** y el monitor son comunes. Una sola fuente Navegador de OBS muestra ambas; no hace falta añadir otra dirección. Cada salida comparte una conexión y retransmite el fotograma de voz a su capa transparente interna.
 
@@ -111,7 +126,7 @@ Se recuerdan las dos selecciones y sus ajustes por separado. Las preferencias v3
 
 ## Mascotas que hablan y parpadean (.pet)
 
-En **Elegir mascota de voz**, elige **EduWitch (voz)**, **EduDracula (voz)**, **EduGhost (voz)** o **EduMomia (voz)**. Se convirtieron los cuatro personajes de `MascotaHalloween.veado` a `pets/*-Voz.pet`, con sus cuatro imágenes completas de 1254 × 1254 y sus tiempos originales de parpadeo (0.15 s, intervalo 0.75–4 s). El archivo original y la instalación de veadotube no se modifican. Las demostraciones del selector alternan boca y ojos sin acceder al micrófono.
+En la biblioteca de voz, elige **EduWitch (voz)**, **EduDracula (voz)**, **EduGhost (voz)** o **EduMomia (voz)**. Se convirtieron los cuatro personajes de `MascotaHalloween.veado` a `pets/*-Voz.pet`, con sus cuatro imágenes completas de 1254 × 1254 y sus tiempos originales de parpadeo (0.15 s, intervalo 0.75–4 s). El archivo original y la instalación de veadotube no se modifican. Las demostraciones del selector alternan boca y ojos sin acceder al micrófono.
 
 La mascota de voz permanece quieta en la esquina elegida y siempre visible mientras su opción esté activada, sin el saludo del recorrido. En **Voz y parpadeo**, activa **Usar mi micrófono** y selecciona la entrada. El micrófono está apagado inicialmente. Ajusta **Umbral para hablar** (por defecto −38 dB) y **Cerrar la boca tras** (180 ms). La detección mide volumen, con supresión de ruido e histéresis; no reconoce palabras ni distingue automáticamente voz de otros sonidos fuertes. Su parpadeo es independiente del recorrido y de su pausa.
 
@@ -121,7 +136,7 @@ La captura funciona aunque minimices el panel, abras un selector o configures la
 
 ## EduZombie: lápida y resurrección
 
-En **Recorrido y saludo → Elegir mascota de recorrido**, selecciona **EduZombie**. Usa el gato verde con gafas y costuras y la lápida original con lirio y musgo proporcionados por el usuario. Su lápida dice **RIP** y, debajo, **EduCat**. Espera 3 segundos, aparece una pata y después sale el gato zombi completo. Tras 4 segundos de salida, deambula 24 segundos con pasos arrastrados, se desploma, se hunde y reaparece la lápida. El ciclo dura 33 segundos y se repite.
+En **Mascota de recorrido → Cambiar mascota**, selecciona **EduZombie**. Usa el gato verde con gafas y costuras y la lápida original con lirio y musgo proporcionados por el usuario. Su lápida dice **RIP** y, debajo, **EduCat**. Espera 3 segundos, aparece una pata y después sale el gato zombi completo. Tras 4 segundos de salida, deambula 24 segundos con pasos arrastrados, se desploma, se hunde y reaparece la lápida. El ciclo dura 33 segundos y se repite.
 
 Al elegir la versión incluida, comienza con tamaño 256, velocidad 22 y movimiento libre; las apariciones se desactivan para que el ciclo pueda verse completo. Conserva los controles de tamaño, velocidad, recorrido y pausa. **Resucitar ahora** adelanta la primera pata. La lápida permanece quieta durante la salida y la caída, reaparece en el lugar donde termina el recorrido y su texto nunca se refleja. La mascota de voz funciona al mismo tiempo.
 
@@ -185,7 +200,7 @@ npm.cmd run smoke -- --packaged --voice
 - `src/presence.cjs`: ciclo compartido de aparición, salida, ausencia y regreso; no altera los interruptores de las salidas.
 - `src/server.cjs`: HTTP solo en `127.0.0.1`, lista cerrada de recursos y eventos SSE. No ofrece endpoints de escritura.
 - `src/preload.cjs`: puente IPC limitado al panel, con aislamiento y sandbox.
-- `web/panel.*`: controles y vista previa sobre una escena de ejemplo.
+- `web/panel.*`: escena, capas y controles de la cabina.
 - `web/overlay.*`: renderer transparente compartido entre escritorio, vista previa y OBS.
 - `web/pet.css`: cuerpo flotante, superposición del parpadeo y globo de BOO.
 - `web/layout.js`: posición de la mascota y colocación del globo dentro del lienzo.
@@ -228,85 +243,85 @@ Mascota de recorrido basada en el gatito al volante del Mercedes F1. Incluye dos
 
 ## EduKimi
 
-Mascota de voz basada en el gato piloto Mercedes con casco y rizos. Disponible como **EduKimi** en **Elegir mascota de voz**. Abre la boca al detectar el micrófono y parpadea tanto en silencio como hablando, con los controles actuales de entrada, sensibilidad y espera de cierre. Archivo autocontenido: `pets/EduKimi-Voz.pet`. La pose en reposo conserva el PNG original.
+Mascota de voz basada en el gato piloto Mercedes con casco y rizos. Disponible como **EduKimi** en la biblioteca de voz. Abre la boca al detectar el micrófono y parpadea tanto en silencio como hablando, con los controles actuales de entrada, sensibilidad y espera de cierre. Archivo autocontenido: `pets/EduKimi-Voz.pet`. La pose en reposo conserva el PNG original.
 
 Recursos y prompts de imagegen: `docs/edukimi-generation.md`. Prueba del portable con datos aislados: `npm.cmd run smoke -- --packaged --kimi`.
 
 ## EduCatrin
 
-Mascota de voz basada en el gato mariachi de Día de Muertos. Disponible como **EduCatrin** en **Elegir mascota de voz**. Abre la boca con el micrófono y parpadea en silencio y al hablar. Conserva sombrero, flores, traje, maquillaje y transparencia, con los controles actuales de audio. Archivo autocontenido: `pets/EduCatrin-Voz.pet`. La pose en reposo conserva el PNG original.
+Mascota de voz basada en el gato mariachi de Día de Muertos. Disponible como **EduCatrin** en la biblioteca de voz. Abre la boca con el micrófono y parpadea en silencio y al hablar. Conserva sombrero, flores, traje, maquillaje y transparencia, con los controles actuales de audio. Archivo autocontenido: `pets/EduCatrin-Voz.pet`. La pose en reposo conserva el PNG original.
 
 Recursos y prompts de imagegen: `docs/educatrin-generation.md`. Prueba del portable con datos aislados: `npm.cmd run smoke -- --packaged --catrin`.
 
 ## Catrina
 
-Mascota de voz basada en la gatita Catrina de magenta. Disponible como **Catrina** en **Elegir mascota de voz**. Abre la boca con el micrófono y parpadea en silencio y hablando. Conserva sombrero, flores, velo, vestido, joyas, maquillaje y transparencia, con los controles de audio actuales. Archivo autocontenido: `pets/Catrina-Voz.pet`. La pose de reposo conserva el PNG original.
+Mascota de voz basada en la gatita Catrina de magenta. Disponible como **Catrina** en la biblioteca de voz. Abre la boca con el micrófono y parpadea en silencio y hablando. Conserva sombrero, flores, velo, vestido, joyas, maquillaje y transparencia, con los controles de audio actuales. Archivo autocontenido: `pets/Catrina-Voz.pet`. La pose de reposo conserva el PNG original.
 
 Recursos y prompts de imagegen: `docs/catrina-generation.md`. Prueba aislada del portable: `npm.cmd run smoke -- --packaged --catrina`.
 
 ## EduNueces
 
-Mascota de voz basada en el gato cascanueces con uniforme rojo, azul y dorado. Disponible como **EduNueces** en **Elegir mascota de voz**. Abre la boca al detectar el micrófono y parpadea en silencio y al hablar. El reposo conserva la imagen original; no incluye acciones especiales. Archivo autocontenido: `pets/EduNueces-Voz.pet`.
+Mascota de voz basada en el gato cascanueces con uniforme rojo, azul y dorado. Disponible como **EduNueces** en la biblioteca de voz. Abre la boca al detectar el micrófono y parpadea en silencio y al hablar. El reposo conserva la imagen original; no incluye acciones especiales. Archivo autocontenido: `pets/EduNueces-Voz.pet`.
 
 Recursos y prompts: `docs/edunueces-generation.md`. Prueba aislada del portable: `npm.cmd run smoke -- --packaged --edunueces`.
 
 ## EduGrinch
 
-Mascota de voz basada en el gato verde con lentes y traje de Santa. Disponible como **EduGrinch** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea tanto en silencio como al hablar. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduGrinch-Voz.pet`.
+Mascota de voz basada en el gato verde con lentes y traje de Santa. Disponible como **EduGrinch** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea tanto en silencio como al hablar. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduGrinch-Voz.pet`.
 
 Recursos y prompts: `docs/edugrinch-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edugrinch`.
 
 ## EduSnow
 
-Mascota de voz basada en el gato de nieve con sombrero, lentes, nariz de zanahoria y bufanda roja. Disponible como **EduSnow** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduSnow-Voz.pet`.
+Mascota de voz basada en el gato de nieve con sombrero, lentes, nariz de zanahoria y bufanda roja. Disponible como **EduSnow** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduSnow-Voz.pet`.
 
 Recursos y prompts: `docs/edusnow-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edusnow`.
 
 ## EduElfo
 
-Mascota de voz basada en el gato elfo de traje verde, collar rojo y cascabeles dorados. Disponible como **EduElfo** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduElfo-Voz.pet`.
+Mascota de voz basada en el gato elfo de traje verde, collar rojo y cascabeles dorados. Disponible como **EduElfo** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduElfo-Voz.pet`.
 
 Recursos y prompts: `docs/eduelfo-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --eduelfo`.
 
 ## EduReno
 
-Mascota de voz basada en el gato con astas de reno, nariz roja, arnés y cascabel dorado. Disponible como **EduReno** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduReno-Voz.pet`.
+Mascota de voz basada en el gato con astas de reno, nariz roja, arnés y cascabel dorado. Disponible como **EduReno** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduReno-Voz.pet`.
 
 Recursos y prompts: `docs/edureno-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edureno`.
 
 ## EduCookie
 
-Mascota de voz basada en la galleta de gato con glaseado, lentes, moño rojo y dulces. Disponible como **EduCookie** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduCookie-Voz.pet`.
+Mascota de voz basada en la galleta de gato con glaseado, lentes, moño rojo y dulces. Disponible como **EduCookie** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y no incluye acciones especiales. Paquete autocontenido: `pets/EduCookie-Voz.pet`.
 
 Recursos y prompts: `docs/educookie-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --educookie`.
 
 ## EduClaus
 
-Mascota de voz basada en el gato Santa con barba blanca y saco de juguetes. Disponible como **EduClaus** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo, el saco y sus juguetes. Sin acciones especiales. Paquete autocontenido: `pets/EduClaus-Voz.pet`.
+Mascota de voz basada en el gato Santa con barba blanca y saco de juguetes. Disponible como **EduClaus** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo, el saco y sus juguetes. Sin acciones especiales. Paquete autocontenido: `pets/EduClaus-Voz.pet`.
 
 Recursos y prompts: `docs/educlaus-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --educlaus`.
 
 ## EduDoom
 
-Mascota de voz basada en el gato con máscara metálica, armadura plateada y capa verde. Disponible como **EduDoom** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo. Sin acciones especiales. Paquete autocontenido: `pets/EduDoom-Voz.pet`.
+Mascota de voz basada en el gato con máscara metálica, armadura plateada y capa verde. Disponible como **EduDoom** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo. Sin acciones especiales. Paquete autocontenido: `pets/EduDoom-Voz.pet`.
 
 Recursos y prompts: `docs/edudoom-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edudoom`.
 
 ## EduMoon
 
-Mascota de voz basada en el gato con capucha blanca, vendajes y adornos de luna dorados. Disponible como **EduMoon** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo. Sin acciones especiales. Paquete autocontenido: `pets/EduMoon-Voz.pet`.
+Mascota de voz basada en el gato con capucha blanca, vendajes y adornos de luna dorados. Disponible como **EduMoon** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo. Sin acciones especiales. Paquete autocontenido: `pets/EduMoon-Voz.pet`.
 
 Recursos y prompts: `docs/edumoon-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edumoon`.
 
 ## EduStrange
 
-Mascota de voz basada en el gato con capa roja, túnica azul, amuleto y círculo mágico naranja. Disponible como **EduStrange** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y mantiene el círculo mágico original. Sin acciones especiales. Paquete autocontenido: `pets/EduStrange-Voz.pet`.
+Mascota de voz basada en el gato con capa roja, túnica azul, amuleto y círculo mágico naranja. Disponible como **EduStrange** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva la imagen original en reposo y mantiene el círculo mágico original. Sin acciones especiales. Paquete autocontenido: `pets/EduStrange-Voz.pet`.
 
 Recursos y prompts: `docs/edustrange-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edustrange`.
 
 ## EduRivet
 
-Mascota de voz basada en la gatita blanca y lavanda con gafas sobre la frente, bufanda naranja, equipo y robot amarillo en la mochila. Nombre solicitado: **EduRivet**, aunque el archivo de entrada se llama `EduKit.png`. Disponible en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva el robot y la imagen original en reposo. Sin acciones especiales. Paquete autocontenido: `pets/EduRivet-Voz.pet`.
+Mascota de voz basada en la gatita blanca y lavanda con gafas sobre la frente, bufanda naranja, equipo y robot amarillo en la mochila. Nombre solicitado: **EduRivet**, aunque el archivo de entrada se llama `EduKit.png`. Disponible en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y mientras habla. Conserva el robot y la imagen original en reposo. Sin acciones especiales. Paquete autocontenido: `pets/EduRivet-Voz.pet`.
 
 Recursos y prompts: `docs/edurivet-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edurivet`.
 
@@ -318,24 +333,68 @@ Recursos y prompts: `docs/edueinstein-generation.md`. Prueba aislada: `npm.cmd r
 
 ## EduFast
 
-Mascota de voz con traje rojo de piloto y casco. Disponible como **EduFast** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. Conserva el original en reposo, el traje, sus logos y el casco. Sin acciones especiales. Paquete autocontenido: `pets/EduFast-Voz.pet`.
+Mascota de voz con traje rojo de piloto y casco. Disponible como **EduFast** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. Conserva el original en reposo, el traje, sus logos y el casco. Sin acciones especiales. Paquete autocontenido: `pets/EduFast-Voz.pet`.
 
 Recursos y prompts: `docs/edufast-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edufast`.
 
 ## EduDonalds
 
-Mascota de voz con uniforme rojo y amarillo, gorra y diadema con micrófono. Disponible como **EduDonalds** en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. El cuadriculado del original se retiró para obtener transparencia. Conserva los accesorios y el uniforme de la base recortada. Sin acciones especiales. Paquete autocontenido: `pets/EduDonalds-Voz.pet`.
+Mascota de voz con uniforme rojo y amarillo, gorra y diadema con micrófono. Disponible como **EduDonalds** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. El cuadriculado del original se retiró para obtener transparencia. Conserva los accesorios y el uniforme de la base recortada. Sin acciones especiales. Paquete autocontenido: `pets/EduDonalds-Voz.pet`.
 
 Recursos y prompts: `docs/edudonalds-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edudonalds`.
 
 ## EduOxxo
 
-Mascota de voz con gorra y uniforme de OXXO, y un gafete con el logo y el nombre **EduOxxo**, del estilo del gafete de EduDonalds. Disponible en **Elegir mascota de voz**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. La base tiene fondo transparente; el gafete, la gorra y el uniforme permanecen fijos en las cuatro poses. Sin acciones especiales. Paquete autocontenido: `pets/EduOxxo-Voz.pet`.
+Mascota de voz con gorra y uniforme de OXXO, y un gafete con el logo y el nombre **EduOxxo**, del estilo del gafete de EduDonalds. Disponible en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. La base tiene fondo transparente; el gafete, la gorra y el uniforme permanecen fijos en las cuatro poses. Sin acciones especiales. Paquete autocontenido: `pets/EduOxxo-Voz.pet`.
 
 Recursos y prompts: `docs/eduoxxo-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --eduoxxo`.
 
 ## EduDominos
 
-Mascota de voz con gorra y uniforme de Domino’s, y gafete con el logo y el nombre **EduCat**. El nombre del personaje en **Elegir mascota de voz** es **EduDominos**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. La base tiene fondo transparente; gafete, gorra y uniforme permanecen fijos en las cuatro poses. Sin acciones especiales. Paquete autocontenido: `pets/EduDominos-Voz.pet`.
+Mascota de voz con gorra y uniforme de Domino’s, y gafete con el logo y el nombre **EduCat**. El nombre del personaje en la biblioteca de voz es **EduDominos**. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. La base tiene fondo transparente; gafete, gorra y uniforme permanecen fijos en las cuatro poses. Sin acciones especiales. Paquete autocontenido: `pets/EduDominos-Voz.pet`.
 
 Recursos y prompts: `docs/edudominos-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edudominos`.
+
+## EduReturnal
+
+Mascota de voz con traje espacial blanco y naranja, visor agrietado, luces, mochila y equipo. Disponible como **EduReturnal** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. Conserva el original en reposo y mantiene fijos las grietas, las luces, la pantalla y los accesorios. Sin acciones especiales. Paquete autocontenido: `pets/EduReturnal-Voz.pet`.
+
+Recursos y prompts: `docs/edureturnal-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edureturnal`.
+
+## EduPsycho
+
+Mascota de voz con máscara, ojos cian y respirador. Disponible como **EduPsycho** en la biblioteca de voz. Parpadea cerrando los ojos luminosos y representa el habla mediante un movimiento del disco interior del respirador al detectar audio del micrófono. Conserva la máscara puesta, el aro exterior, los lentes, las correas y la ropa. Reposo original intacto; sin acciones especiales. Paquete autocontenido: `pets/EduPsycho-Voz.pet`.
+
+Recursos y prompts: `docs/edupsycho-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edupsycho`.
+
+## EduAlloy
+
+Mascota de voz con cabello naranja, trenzas, dispositivo cian, bufanda azul, collares, arco y carcaj. Disponible como **EduAlloy** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea en silencio y al hablar. Conserva el original en reposo y mantiene fijos el cabello, el equipo y la luz del dispositivo. Sin acciones especiales. Paquete autocontenido: `pets/EduAlloy-Voz.pet`.
+
+Recursos y prompts: `docs/edualloy-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edualloy`.
+
+## EduBot
+
+Mascota de voz robótica con ojos LED cian, antena, armadura blanca y azul y capa. Disponible como **EduBot** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea reduciendo sus ojos LED a líneas de puntos. Conserva el original en reposo; antena, capa, símbolos y luces del cuerpo permanecen fijos. Sin acciones especiales. Paquete autocontenido: `pets/EduBot-Voz.pet`.
+
+Recursos y prompts: `docs/edubot-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edubot`.
+
+## EduFallout
+
+Mascota de voz con armadura metálica, lámpara y respirador. Disponible como **EduFallout** en la biblioteca de voz. Parpadea y mueve sutilmente la rejilla interior del respirador al detectar audio del micrófono. Conserva la máscara puesta, los lentes, la armadura, el número 111 y la pantalla verde. Sin acciones especiales. Paquete autocontenido: `pets/EduFallout-Voz.pet`.
+
+Recursos y prompts: `docs/edufallout-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --edufallout`.
+
+## EduCage
+
+Disponible como **EduCage** en la biblioteca de voz. Abre la boca al detectar audio del micrófono y parpadea detrás de las gafas oscuras. El pulgar, el destello, la chaqueta y la hebilla permanecen fijos. Paquete autocontenido: `pets/EduCage-Voz.pet`.
+
+Recursos y prompts: `docs/educage-generation.md`. Prueba aislada: `npm.cmd run smoke -- --packaged --educage`.
+
+## EduZero
+
+En la biblioteca de voz, selecciona **EduZero**. Parpadea detrás de las gafas y mueve las rejillas de su máscara al detectar audio del micrófono. Las volutas de aire helado se mecen también en silencio. Paquete autocontenido `pets/EduZero-Voz.pet`.
+
+## EduScorpion
+
+En la biblioteca de voz, selecciona **EduScorpion**. Parpadea detrás de las gafas y mueve las rejillas de su máscara al detectar audio del micrófono. El paquete autocontenido está en `pets/EduScorpion-Voz.pet`.

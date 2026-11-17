@@ -1,0 +1,631 @@
+{
+  "size": 512,
+  "count": 24,
+  "seconds": 0.08,
+  "legs": [
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 32,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -12.444444444444443,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -30.20426656986776,
+        "lift": 9.578092796699853,
+        "stance": false
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 9.777777777777779,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 28.296296296296298,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -16.148148148148145,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -22.200353792913337,
+        "lift": 20.885952149547666,
+        "stance": false
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 6.074074074074073,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 24.59259259259259,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -19.851851851851855,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -9.432165581148919,
+        "lift": 27.711611367798085,
+        "stance": false
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 2.3703703703703702,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 20.88888888888889,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -23.555555555555557,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 5.3601991457515625,
+        "lift": 28.590259537028842,
+        "stance": false
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -1.3333333333333357,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 17.185185185185183,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -27.25925925925926,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 19.002245938352047,
+        "lift": 23.333335613233384,
+        "stance": false
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -5.037037037037038,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 13.481481481481481,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -30.96296296296297,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 28.566342695795576,
+        "lift": 13.0689942981984,
+        "stance": false
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -8.740740740740748,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 9.777777777777779,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -30.20426656986776,
+        "lift": 9.578092796699853,
+        "stance": false
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 32,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -12.444444444444443,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 6.074074074074073,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -22.200353792913308,
+        "lift": 20.885952149547688,
+        "stance": false
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 28.29629629629629,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -16.14814814814816,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 2.3703703703703702,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -9.43216558114896,
+        "lift": 27.711611367798074,
+        "stance": false
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 24.5925925925926,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -19.851851851851848,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -1.3333333333333357,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 5.3601991457515625,
+        "lift": 28.590259537028842,
+        "stance": false
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 20.88888888888889,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -23.555555555555557,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -5.037037037037038,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 19.00224593835207,
+        "lift": 23.33333561323337,
+        "stance": false
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 17.185185185185176,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -27.259259259259267,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -8.74074074074074,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 28.566342695795555,
+        "lift": 13.068994298198433,
+        "stance": false
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 13.481481481481488,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -30.962962962962962,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -12.444444444444443,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 32,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 9.777777777777779,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -30.20426656986776,
+        "lift": 9.578092796699853,
+        "stance": false
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -16.148148148148145,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 28.29629629629631,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 6.074074074074087,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -22.200353792913337,
+        "lift": 20.885952149547666,
+        "stance": false
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -19.851851851851855,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 24.59259259259258,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": 2.370370370370356,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": -9.432165581148919,
+        "lift": 27.711611367798085,
+        "stance": false
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -23.555555555555557,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 20.88888888888889,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -1.3333333333333357,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 5.3601991457515625,
+        "lift": 28.590259537028842,
+        "stance": false
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -27.25925925925926,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 17.185185185185198,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -5.037037037037024,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 19.002245938352047,
+        "lift": 23.333335613233384,
+        "stance": false
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -30.96296296296297,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 13.481481481481467,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -8.740740740740755,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 28.566342695795576,
+        "lift": 13.0689942981984,
+        "stance": false
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -30.20426656986776,
+        "lift": 9.578092796699853,
+        "stance": false
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 9.777777777777779,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -12.444444444444443,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 32,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -22.200353792913337,
+        "lift": 20.885952149547666,
+        "stance": false
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 6.074074074074087,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -16.148148148148138,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 28.29629629629631,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": -9.432165581148919,
+        "lift": 27.711611367798085,
+        "stance": false
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": 2.370370370370356,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -19.85185185185187,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 24.59259259259258,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 5.3601991457515625,
+        "lift": 28.590259537028842,
+        "stance": false
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -1.3333333333333357,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -23.555555555555557,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 20.88888888888889,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 19.002245938352047,
+        "lift": 23.333335613233384,
+        "stance": false
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -5.037037037037024,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -27.259259259259245,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 17.185185185185198,
+        "lift": 0,
+        "stance": true
+      }
+    ],
+    [
+      {
+        "name": "trasera-cercana",
+        "shift": 28.566342695795576,
+        "lift": 13.0689942981984,
+        "stance": false
+      },
+      {
+        "name": "trasera-lejana",
+        "shift": -8.740740740740755,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-cercana",
+        "shift": -30.962962962962976,
+        "lift": 0,
+        "stance": true
+      },
+      {
+        "name": "delantera-lejana",
+        "shift": 13.481481481481467,
+        "lift": 0,
+        "stance": true
+      }
+    ]
+  ]
+}

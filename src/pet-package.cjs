@@ -2,7 +2,7 @@
 const crypto = require('node:crypto');
 const { behaviorProfile } = require('./behavior.cjs');
 const FORMAT = 'aula-fantasma-pet';
-const VERSION = 11;
+const VERSION = 12;
 const MAX_FILE = 32 * 1024 * 1024;
 const MAX_IMAGE = 20 * 1024 * 1024;
 const FLOAT = { enabled: true, amplitude: 10, frequency: 2.1, tiltAmplitude: 1.8, tiltFrequency: 1.25, stretchAmplitude: 0.008, stretchPhase: 0.4 };
@@ -81,17 +81,23 @@ function parsePet(data) {
   if (Buffer.byteLength(data) > MAX_FILE) fail('La mascota debe pesar como máximo 32 MB.');
   let manifest;
   try { manifest = JSON.parse(data.toString()); } catch { fail('No se pudo leer el archivo de mascota.'); }
-  if (manifest?.format !== FORMAT || ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, VERSION].includes(manifest.version) || (manifest.version >= 6 && manifest.version <= 10 && manifest.kind !== 'voice') || (manifest.version === 11 && manifest.kind !== 'companion')) fail('El formato o la versión de esta mascota no es compatible.');
-  const isVoice = manifest.version >= 6 && manifest.version <= 10;
-  keys(manifest, manifest.version === 1 ? ['format', 'version', 'name', 'images', 'animation'] : ['format', 'version', 'name', 'images', 'animation', 'behavior', ...(manifest.version >= 6 ? ['kind'] : []), ...(isVoice && manifest.version >= 8 ? ['effects'] : [])], 'Mascota');
+  if (manifest?.format !== FORMAT || !Number.isInteger(manifest.version) || manifest.version < 1 || manifest.version > VERSION) fail('El formato o la versión de esta mascota no es compatible.');
+  const hasMist = manifest.version === 12;
+  const isVoice = (manifest.version >= 6 && manifest.version <= 10) || hasMist;
+  if ((isVoice && manifest.kind !== 'voice') || (manifest.version === 11 && manifest.kind !== 'companion')) fail('El tipo de mascota no coincide con su versión.');
+  keys(manifest, manifest.version === 1 ? ['format', 'version', 'name', 'images', 'animation'] : ['format', 'version', 'name', 'images', 'animation', 'behavior', ...(manifest.version >= 6 ? ['kind'] : []), ...(isVoice && manifest.version >= 8 && !hasMist ? ['effects'] : [])], 'Mascota');
   if (typeof manifest.name !== 'string' || !manifest.name.trim() || manifest.name.length > 80 || /[\x00-\x1f]/.test(manifest.name)) fail('La mascota necesita un nombre válido de hasta 80 caracteres.');
-  keys(manifest.images, manifest.version === 11 ? ['open', 'atlas'] : isVoice ? ['open', 'closed', 'talking', 'talkingClosed', ...(manifest.version >= 9 ? ['bat'] : []), ...(manifest.version >= 10 ? ['batOpen', 'batClosed', 'batTalkingClosed'] : [])] : manifest.version === 1 ? ['open', 'closed'] : manifest.version === 2 ? ['open', 'closed', 'atlas'] : manifest.version === 3 ? ['open', 'closed', 'atlas', 'limb'] : manifest.version === 4 ? ['open', 'closed', 'atlas', 'limb', 'walk', 'greeting', 'frames'] : ['open', 'closed', 'atlas', 'limb', 'walk', 'greeting', 'frames', 'cycle'], 'Imágenes');
+  keys(manifest.images, manifest.version === 11 ? ['open', 'atlas'] : isVoice ? ['open', 'closed', 'talking', 'talkingClosed', ...(hasMist ? ['mist'] : manifest.version === 10 ? ['bat', 'batOpen', 'batClosed', 'batTalkingClosed'] : manifest.version === 9 ? ['bat'] : [])] : manifest.version === 1 ? ['open', 'closed'] : manifest.version === 2 ? ['open', 'closed', 'atlas'] : manifest.version === 3 ? ['open', 'closed', 'atlas', 'limb'] : manifest.version === 4 ? ['open', 'closed', 'atlas', 'limb', 'walk', 'greeting', 'frames'] : ['open', 'closed', 'atlas', 'limb', 'walk', 'greeting', 'frames', 'cycle'], 'Imágenes');
   const images = { open: image(manifest.images.open) };
   if (manifest.images.closed !== undefined) images.closed = image(manifest.images.closed);
   if (manifest.images.atlas !== undefined) images.atlas = image(manifest.images.atlas);
   if (manifest.images.limb !== undefined) images.limb = image(manifest.images.limb);
   for (const kind of ['walk', 'greeting', 'frames', 'cycle', 'talking', 'talkingClosed', 'bat', 'batOpen', 'batClosed', 'batTalkingClosed']) if (manifest.images[kind] !== undefined) images[kind] = image(manifest.images[kind]);
   const animation = animationProfile(manifest.animation);
+  if (hasMist) {
+    images.mist = image(manifest.images.mist);
+    if (animation.cloth.enabled || Object.values(images).some(resource => resource.mime !== 'image/png')) fail('La bruma necesita poses y capa PNG sin ondulación de sábana.');
+  }
   if (animation.blink.enabled && !images.closed) fail('Para parpadear se necesita la imagen de ojos cerrados.');
   if (animation.cloth.enabled && images.open.mime === 'image/gif') fail('La ondulación necesita una imagen PNG o WebP estática.');
   const result = { name: manifest.name.trim(), images, animation };
@@ -151,7 +157,8 @@ function parsePet(data) {
 }
 function serializePet(pet) {
   const images = Object.fromEntries(Object.entries(pet.images).map(([key, value]) => [key, { mime: value.mime, dataBase64: value.bytes.toString('base64') }]));
-  const bytes = Buffer.from(JSON.stringify({ format: FORMAT, version: pet.kind === 'voice' ? (pet.effects?.draculaBat ? (pet.images.batOpen ? 10 : 9) : pet.effects ? 8 : pet.animation.cloth.enabled ? 7 : 6) : pet.behavior ? (pet.behavior.vehicle ? 11 : pet.behavior.cycle ? 5 : pet.behavior.flipbook ? 4 : pet.images.limb ? 3 : 2) : 1, ...(pet.kind === 'voice' ? { kind: 'voice' } : pet.behavior?.vehicle ? { kind: 'companion' } : {}), name: pet.name, images, animation: pet.animation, ...(pet.behavior ? { behavior: pet.behavior } : {}), ...(pet.effects ? { effects: pet.effects } : {}) }, null, 2) + '\n');
+  const voiceVersion = pet.images.mist ? 12 : pet.effects?.draculaBat ? (pet.images.batOpen ? 10 : 9) : pet.effects ? 8 : pet.animation.cloth.enabled ? 7 : 6;
+  const bytes = Buffer.from(JSON.stringify({ format: FORMAT, version: pet.kind === 'voice' ? voiceVersion : pet.behavior ? (pet.behavior.vehicle ? 11 : pet.behavior.cycle ? 5 : pet.behavior.flipbook ? 4 : pet.images.limb ? 3 : 2) : 1, ...(pet.kind === 'voice' ? { kind: 'voice' } : pet.behavior?.vehicle ? { kind: 'companion' } : {}), name: pet.name, images, animation: pet.animation, ...(pet.behavior ? { behavior: pet.behavior } : {}), ...(pet.effects ? { effects: pet.effects } : {}) }, null, 2) + '\n');
   parsePet(bytes); // Exportar solamente archivos que se puedan volver a cargar.
   return bytes;
 }

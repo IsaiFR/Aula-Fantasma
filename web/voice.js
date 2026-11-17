@@ -36,10 +36,12 @@ window.AulaVoice = class {
     const texture = animated ? this.cloth.canvas : image;
     const width = animated ? texture.width : image.naturalWidth, height = animated ? texture.height : image.naturalHeight;
     const bat = frame.draculaBat;
+    const mist = this.images.mist;
+    const mistTick = mist ? Math.floor(frame.elapsed * 24) : null;
     this.canvas.dataset.form = bat?.phase || 'original';
     this.canvas.dataset.batMix = String(bat?.mix || 0);
     this.canvas.dataset.phase = String(frame.elapsed);
-    const renderedKey = `${sourceKey}:${mirrored}:${animated ? this.cloth.key : ''}:${bat && bat.mix > 0 ? `${bat.elapsed}:${bat.mix}` : ''}`;
+    const renderedKey = `${sourceKey}:${mirrored}:${animated ? this.cloth.key : ''}:${bat && bat.mix > 0 ? `${bat.elapsed}:${bat.mix}` : ''}:${mistTick ?? ''}`;
     if (this.renderedKey === renderedKey) return;
     this.renderedKey = renderedKey;
     if (this.canvas.width !== width || this.canvas.height !== height) { this.canvas.width = width; this.canvas.height = height; }
@@ -48,6 +50,7 @@ window.AulaVoice = class {
     if (mirrored) { context.translate(this.canvas.width, 0); context.scale(-1, 1); }
     context.globalAlpha = bat ? 1 - bat.mix : 1;
     context.drawImage(texture, 0, 0); context.globalAlpha = 1;
+    if (mist) this.drawMist(context, mist, mistTick, width, height);
     const batKind = ({ open: 'batOpen', closed: 'batClosed', talking: 'bat', talkingClosed: 'batTalkingClosed' })[kind];
     if (bat) this.bat.render(context, this.images.bat, bat, width, height, this.images[batKind] || this.images.bat);
     this.canvas.dataset.batPose = bat ? (this.images[batKind] ? batKind : 'bat') : '';
@@ -56,6 +59,18 @@ window.AulaVoice = class {
     this.canvas.dataset.asset = voice.urls.open;
     this.canvas.dataset.mirrored = String(mirrored);
     this.canvas.dataset.cloth = String(animated);
+    this.canvas.dataset.mist = mistTick === null ? '' : String(mistTick);
     this.canvas.dataset.phase = String(frame.elapsed);
+  }
+  drawMist(context, image, tick, width, height) {
+    const phase = tick * 2 * Math.PI / (24 * 5);
+    const sway = Math.sin(phase);
+    const lift = 1 - Math.cos(phase);
+    context.save();
+    context.translate(width / 2 + width * .012 * sway, height / 2 - height * .009 * lift);
+    context.rotate(.027 * sway);
+    context.globalAlpha = 1 - .13 * lift;
+    context.drawImage(image, -width / 2, -height / 2, width, height);
+    context.restore();
   }
 };

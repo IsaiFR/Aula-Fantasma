@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Elegir mascota · Aula Fantasma</title>
+  <title>Biblioteca · Aula Fantasma</title>
   <link rel="icon" href="/favicon.ico">
   <link rel="stylesheet" href="/panel.css">
   <link rel="stylesheet" href="/pet-selector.css">
@@ -11,15 +11,29 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span><div><strong>Aula Fantasma</strong><span>Tu pequeña compañía para las clases.</span></div></div>
-    <button id="back-panel" class="secondary-button">← Volver</button>
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i></span><strong>Aula Fantasma</strong></div>
+      <button id="back-panel" class="connection-button" type="button">← Volver a la escena</button>
+    </div>
   </header>
   <main class="selector-page">
     <div class="selector-heading">
-      <div><span class="eyebrow" id="selector-type">TUS PERSONAJES</span><h1 id="selector-title">Elige tu compañero.</h1><p id="selector-description">Cada mascota tiene su propia forma de moverse y saludar.</p></div>
-      <button id="add-pet" class="secondary-button">Añadir mascota</button>
+      <div>
+        <h1 id="selector-title">Biblioteca de mascotas</h1>
+        <p id="selector-description">Elige una mascota para tu escena.</p>
+      </div>
+      <button id="add-pet" class="primary-button" type="button" disabled>+ Importar archivo</button>
+    </div>
+    <div class="library-tools">
+      <div class="library-search">
+        <label for="pet-search" class="field-label">Buscar por nombre</label>
+        <input id="pet-search" type="search" placeholder="Ej. EduGhost" autocomplete="off" disabled aria-controls="pet-grid">
+      </div>
+      <span id="selector-type" class="format-chip"></span>
+      <span id="library-count" role="status"></span>
     </div>
     <p id="library-status" role="status">Cargando mascotas…</p>
+    <p id="library-empty" hidden>No hay mascotas con ese nombre.</p>
     <div id="pet-grid" class="pet-grid" aria-label="Mascotas disponibles"></div>
   </main>
 </body>

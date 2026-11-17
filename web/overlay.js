@@ -14,6 +14,7 @@
   const surface = preview ? 'preview' : new URLSearchParams(location.search).get('surface') || 'obs';
   const libraryPet = surface === 'library' ? new URLSearchParams(location.search).get('pet') : null;
   const voiceLayer = new URLSearchParams(location.search).get('slot') === 'voice';
+  const countdown = !voiceLayer && !libraryPet && ['obs', 'preview', 'desktop'].includes(surface) ? new window.AulaCountdown(preview || document.body, surface === 'obs', surface) : null;
   if (!libraryPet && !voiceLayer) {
     const layer = document.createElement('iframe'); layer.id = 'voice-layer'; layer.title = 'Mascota de voz en la esquina';
     layer.src = `/overlay?slot=voice&surface=${encodeURIComponent(surface)}`;
@@ -96,6 +97,7 @@
       booNow.disabled = frame.settings.paused || (!frame.settings.booEnabled && !frame.behavior?.cycle) || frame.boo || frame.presence?.phase !== 'visible';
       booNow.title = frame.presence?.phase !== 'visible' ? 'El fantasma saluda cuando está en pantalla.' : frame.settings.paused ? 'Reanuda el recorrido para probar el saludo.' : frame.behavior?.cycle?.reverseAfterRest ? 'Comenzar otro recorrido de 30 segundos.' : frame.behavior?.cycle ? (frame.behavior.cycle.sequence.some(entry=>entry.stage==='lightning') ? 'Adelantar el rayo y la resurrección.' : 'Adelantar la salida de la tierra.') : 'Detenerse y mostrar el globo.';
     }
+    if (booNow && frame.behavior?.cycle?.sequence.every(entry => entry.stage === 'walk')) booNow.title = 'Volver al primer paso de la caminata.';
     const status = document.getElementById('presence-status');
     if (status) {
       const phase = frame.presence?.phase;
@@ -125,6 +127,7 @@
   events.addEventListener('error', () => {
     if (disposed || !document.documentElement) return;
     connected = false;
+    countdown?.disconnect();
     document.documentElement.dataset.connected = 'false';
     anchor.style.visibility = 'hidden';
     bubble.style.visibility = 'hidden';
@@ -143,6 +146,8 @@
       const { settings } = frame;
       const width = preview ? preview.clientWidth : innerWidth;
       const height = preview ? preview.clientHeight : innerHeight;
+      countdown?.render(frame.countdown, frame.canvas || { width: 1920, height: 1080 }, width, height, connected);
+      if (preview && frame.countdown) window.dispatchEvent(new CustomEvent('aula:countdown-frame', { detail: frame.countdown }));
       // Mismo tamaño relativo en escritorio, lienzo OBS y miniatura del panel.
       const layout = window.AulaLayout.petLayout(width, height, settings, frame, surface);
       if (surface === 'library') {
