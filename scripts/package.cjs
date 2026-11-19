@@ -3,11 +3,14 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 const { packager } = require('@electron/packager');
+const { prepareTabletRuntime } = require('./tablet-runtime.cjs');
 
 (async () => {
   const root = path.join(__dirname, '..');
   const staging = fs.mkdtempSync(path.join(os.tmpdir(), 'aula-fantasma-build-'));
   try {
+    const installedTablet = path.join(root, 'resources', 'tablet');
+    const tabletRuntime = await prepareTabletRuntime(installedTablet, staging);
     const output = await packager({
       dir: root, out: staging,
       name: 'Aula Fantasma', platform: 'win32', arch: 'x64',
@@ -24,6 +27,7 @@ const { packager } = require('@electron/packager');
       }
     });
     for (const directory of output) {
+      if (tabletRuntime !== installedTablet) fs.cpSync(tabletRuntime, path.join(directory, 'resources', 'tablet'), { recursive: true });
       for (const name of fs.readdirSync(directory)) {
         const source = path.join(directory, name), target = path.join(root, name);
         // Sobrescribir archivos en sitio evita eliminar antes un ejecutable que

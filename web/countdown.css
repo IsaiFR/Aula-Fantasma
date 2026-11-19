@@ -1,9 +1,34 @@
-#class-countdown { position: absolute; z-index: 10; width: 320px; height: 156px; box-sizing: border-box; padding: 17px 16px 12px; border: 2px solid #0003; border-radius: 22px; background: #fffffff0; box-shadow: 0 6px 24px #0002; color: #000; text-align: center; font-family: "Segoe UI", sans-serif; transform-origin: bottom left; pointer-events: none; }
+#class-countdown {
+  position: absolute;
+  z-index: 10;
+  width: 320px;
+  height: 156px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 20px minmax(0, 1fr) 20px;
+  align-items: center;
+  padding: 10px 16px;
+  border: 2px solid #0003;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--secondary) 96%, transparent);
+  box-shadow: 0 6px 24px #0002;
+  color: #000;
+  text-align: center;
+  font-family: "Segoe UI", sans-serif;
+  transform-origin: bottom left;
+  pointer-events: none;
+}
 #class-countdown[hidden] { display: none !important; }
 #class-countdown .timer-caption { font-size: 15px; font-weight: 700; letter-spacing: 1.4px; line-height: 20px; }
-#class-countdown .timer-digits { font-size: 64px; font-weight: 700; line-height: 76px; font-variant-numeric: tabular-nums; }
+#class-countdown .timer-digits {
+  font-size: 80px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.035em;
+  font-variant-numeric: tabular-nums;
+}
 #class-countdown .timer-detail { color: #000; font-size: 13px; line-height: 20px; }
-#class-countdown[data-phase="finished"] { border-color: #0003; background: #e9f8eef5; animation: timer-finish .6s ease-out; }
+#class-countdown[data-phase="finished"] { background: color-mix(in srgb, var(--secondary) 75%, var(--accent)); animation: timer-finish .6s ease-out; }
 #class-countdown[data-phase="finished"] .timer-digits { animation: timer-check .8s ease-out; }
 @keyframes timer-finish { from { opacity: 0; filter: brightness(1.6); } to { opacity: 1; filter: brightness(1); } }
 @keyframes timer-check { from { transform: scale(.4) rotate(-25deg); } 65% { transform: scale(1.15) rotate(5deg); } to { transform: scale(1) rotate(0); } }

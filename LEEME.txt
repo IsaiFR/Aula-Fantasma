@@ -5,6 +5,28 @@ Selecciona una capa para configurar su mascota o el cronómetro.
 En Cambiar mascota puedes buscar personajes o importar un archivo.
 Abre Salidas para activar OBS, copiar la URL y elegir un monitor.
 
+ESCENAS DE LA VENTANA COMPARTIDA
+Comparte Aula Fantasma · Tablet una vez. Cambia entre Inicio, Apuntes,
+Receso y Despedida desde el panel. Las tres escenas horizontales usan 16:9;
+en Apuntes la ventana vuelve a la proporción de tu tablet. Receso necesita
+internet y usa la cuenta regresiva de edunetmx.online/obs/receso.
+La ventana compartida muestra la escena a borde completo. Para cerrarla,
+usa Cerrar ventana en Tablet por USB, desde el panel principal.
+El stinger se adapta al formato de destino de cada cambio de escena.
+Pulsa Atajos de escenas encima de los botones Inicio y Apuntes. Selecciona
+un campo, presiona la combinación (por ejemplo Shift+A) y pulsa Guardar. Los atajos
+funcionan desde otras ventanas mientras Aula Fantasma esté abierta.
+
+TABLET ANDROID POR USB
+Conecta un cable USB de datos y autoriza la depuración USB en la tablet.
+Abre Tablet por USB, pulsa Conectar tablet y comparte Aula Fantasma · Tablet
+en tu videollamada. La ventana incluye las mascotas activas y el cronómetro.
+La ventana sigue la proporción de la tablet. En la Galaxy Tab S8+ en vertical,
+la captura USB admite 1752 × 2800 a un máximo de 30 fps.
+Comparte también el audio de la ventana para transmitir la campana.
+Si ya superpones la fuente Navegador en OBS, apaga Incluir mascotas y cronómetro
+en Tablet por USB y deja la Captura de ventana debajo de esa fuente.
+
 CRONÓMETRO PARA ACTIVIDADES
 Elige 1, 2, 5 o 10 min, usa los botones de -10 s / +10 s o escribe
 minutos:segundos (2:30) o segundos (150), y confirma con Enter.
@@ -12,7 +34,7 @@ Iniciar cronómetro muestra 3, 2, 1 y comienza la cuenta: visible los primeros 5
 oculta hasta los últimos 3 s, con campana de boxeo al quedar 10 s.
 Al acabar muestra ¡TIEMPO TERMINADO! animado durante 3 s y desaparece.
 La tarjeta Cronómetro conserva el tiempo restante al cambiar de capa.
-Posición en OBS y escritorio permite editar X (derecha) e Y (arriba), con origen en la
+Posición del cronómetro permite editar X (derecha) e Y (arriba), con origen en la
 esquina inferior izquierda. Mostrar posición permite ubicarlo antes.
 Comparte la fuente Navegador de las mascotas y usa texto negro en tarjeta clara.
 Activa También en mi escritorio para verlo sobre tus ventanas, sin
@@ -88,9 +110,8 @@ Conserva compatibilidad con las mascotas .aulapet anteriores.
 5. Mantén Aula Fantasma abierta durante la clase. Cerrar el panel la deja en
    la bandeja; "Salir de la app" cierra también el servidor y ambas salidas.
 
-Ctrl+Alt+P: pausa/reanuda el recorrido.
-Ctrl+Alt+H: oculta/muestra ambas salidas.
-Si esos atajos están ocupados, usa el panel o la bandeja.
+Ctrl+Shift+C inicia el cronómetro, incluso con la app en la bandeja.
+Si otra aplicación usa ese atajo, pulsa Iniciar cronómetro en el panel.
 
 APARICIONES: "Salir y regresar" deja al fantasma visible 35 segundos, lo saca
 por un lateral y lo trae de vuelta tras 60 segundos fuera. Cada transición

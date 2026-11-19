@@ -8,7 +8,7 @@
   function petLayout(width, height, settings, frame, surface = 'obs') {
     const pixel = frame.pixelRoute;
     const reference = frame.canvas || frame.viewport || { width: 1920, height: 1080 };
-    const scale = pixel || frame.cycle ? (surface === 'preview' ? Math.min(width / reference.width, height / reference.height) : 1) : Math.min(width / reference.width, height / reference.height);
+    const scale = (pixel || frame.cycle) && surface !== 'preview' && surface !== 'tablet' ? 1 : Math.min(width / reference.width, height / reference.height);
     const size = Math.max(1, Math.min(settings.size * scale, width, height));
     const margin = Math.min(settings.margin * scale, Math.max(0, (Math.min(width, height) - size) / 2));
     const spanX = Math.max(0, width - size - margin * 2), spanY = Math.max(0, height - size - margin * 2);

@@ -13,10 +13,14 @@
   let renderedInspector;
   let inspectorRequest = 0;
   const timerPresets = [...document.querySelectorAll('[data-timer-seconds]')];
+  const sceneButtons = [...document.querySelectorAll('.presentation-scene-buttons button')];
+  const shortcutForms = [...document.querySelectorAll('.scene-shortcuts form')];
+  const shortcutDrafts = new Set();
   const inspectorCopy = {
     voice: ['Mascota de voz', 'Elige la esquina y calibra el micrófono.'],
     companion: ['Mascota de recorrido', 'Configura el movimiento y el saludo.'],
     timer: ['Cronómetro', 'Cuenta regresiva para las actividades.'],
+    tablet: ['Tablet por USB', 'Presenta los apuntes de tu tablet Android.'],
     outputs: ['Salidas', 'Conecta OBS y elige dónde aparecen tus mascotas.']
   };
 
@@ -34,6 +38,7 @@
     $('configuration-description').textContent = description;
     $('pet-settings').hidden = pane !== 'voice' && pane !== 'companion';
     $('timer-settings').hidden = pane !== 'timer';
+    $('tablet-settings').hidden = pane !== 'tablet';
     $('output-settings').hidden = pane !== 'outputs';
     document.querySelector('.panel-body').scrollTop = 0;
   }
@@ -87,10 +92,51 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { $('toast').classList.remove('visible'); $('toast').textContent = ''; }, 4500);
   }
+  const tabletCopy = {
+    idle: ['Desconectada', 'Conecta tu tablet Android con un cable USB de datos.'],
+    starting: ['Conectando…', 'Buscando la pantalla. Si Android muestra un aviso de depuración USB, acéptalo.'],
+    live: ['En directo', 'La pantalla se está mostrando en la ventana Aula Fantasma · Tablet.'],
+    stopping: ['Deteniendo…', 'Cerrando la conexión USB.'],
+    error: ['Sin señal', 'Vuelve a conectar la tablet.']
+  };
+  function applyTablet({ status, message, canShow, compositionEnabled, scene, recessStatus, shortcuts }) {
+    const [label, description] = tabletCopy[status];
+    const body = $('tablet-status');
+    if (body.textContent !== (message || description)) body.textContent = message || description;
+    $('tablet-layer-state').textContent = label;
+    $('tablet-start').hidden = status !== 'idle' && status !== 'error';
+    $('tablet-show').hidden = !canShow;
+    $('tablet-stop').hidden = !canShow && !['starting', 'live'].includes(status);
+    $('tablet-composition').checked = compositionEnabled;
+    for (const button of sceneButtons) {
+      const name = button.dataset.scene;
+      const { shortcut, active } = shortcuts[name];
+      button.setAttribute('aria-pressed', String(name === scene));
+      const hint = button.querySelector('kbd');
+      hint.hidden = !active;
+      hint.textContent = active ? shortcut : '';
+      if (active) button.setAttribute('aria-keyshortcuts', shortcut.replace('Ctrl+', 'Control+').replace('Super+', 'Meta+'));
+      else button.removeAttribute('aria-keyshortcuts');
+    }
+    for (const form of shortcutForms) {
+      const name = form.dataset.shortcut;
+      const { shortcut, active, numpadActive } = shortcuts[name];
+      if (!shortcutDrafts.has(name)) form.elements.shortcut.value = shortcut;
+      form.querySelector('[data-clear]').disabled = form.elements.shortcut.disabled || (!shortcut && !shortcutDrafts.has(name));
+      const unavailable = form.querySelector('[data-unavailable]');
+      unavailable.textContent = active ? 'Teclado numérico ocupado en Windows.' : 'Atajo ocupado en Windows.';
+      unavailable.hidden = !shortcut || (active && numpadActive !== false);
+    }
+    const recessMessage = recessStatus === 'error' ? 'No se pudo cargar el receso. Pulsa Receso para reintentar.' : recessStatus === 'loading' ? 'Cargando el receso de EduNet…' : '';
+    const recess = $('recess-status');
+    if (recess.textContent !== recessMessage) recess.textContent = recessMessage;
+    recess.hidden = !recessMessage;
+  }
   function apply(next) {
     state = next;
     $('inspector').setAttribute('aria-busy', 'false');
     applyTimer(next.countdown);
+    applyTablet(next.tablet);
     $('timer-x').max = Math.max(0, next.canvas.width - 320);
     $('timer-y').max = Math.max(0, next.canvas.height - 156);
     const portrait = next.canvas.format === '9:16';
@@ -163,7 +209,14 @@
       ? 'OBS está recibiendo la fuente.'
       : 'La URL está disponible mientras Aula Fantasma esté abierta.';
     const patrol = Boolean(next.behavior.cycle?.reverseAfterRest);
-    $('shortcut-warning').hidden = next.shortcutsAvailable;
+    const timerStart = $('timer-start');
+    if (next.countdownShortcutAvailable) {
+      timerStart.title = 'Iniciar cronómetro con Ctrl + Shift + C';
+      timerStart.setAttribute('aria-keyshortcuts', 'Control+Shift+C');
+    } else {
+      timerStart.removeAttribute('title');
+      timerStart.removeAttribute('aria-keyshortcuts');
+    }
     $('speed').disabled = next.settings.mode === 'still';
     $('booInterval').disabled = !next.settings.booEnabled;
     $('visibleSeconds').disabled = $('awaySeconds').disabled = !next.settings.presenceEnabled;
@@ -217,7 +270,7 @@
     const light = $('preview').classList.toggle('light');
     $('preview-background').setAttribute('aria-pressed', String(light));
   });
-  for (const pane of ['timer', 'outputs']) $('edit-' + pane).addEventListener('click', () => {
+  for (const pane of ['timer', 'tablet', 'outputs']) $('edit-' + pane).addEventListener('click', () => {
     inspectorRequest++;
     inspectorOverride = pane;
     renderInspector();
@@ -263,6 +316,83 @@
     });
   }
   action('reset-position', async () => apply(await window.aula.resetPosition()));
+  for (const button of sceneButtons) action(button.id, () => window.aula.tablet('scene', button.dataset.scene));
+  const shortcutDialog = $('scene-shortcuts');
+  const shortcutInputs = shortcutForms.map(form => form.elements.shortcut);
+  const shortcutModifiers = ['Control', 'Alt', 'AltGraph', 'Shift', 'Meta'];
+  const shortcutNavigationKeys = new Set(['Backspace', 'Delete', 'Insert', 'Enter', 'Escape', 'Tab', 'Space', 'Home', 'End', 'PageUp', 'PageDown', 'Up', 'Down', 'Left', 'Right']);
+  const focusedShortcutInput = () => shortcutDialog.open && shortcutInputs.includes(document.activeElement) ? document.activeElement : null;
+
+  function syncShortcutRecorder() {
+    window.aula.recordSceneShortcut(Boolean(focusedShortcutInput())).catch(() => {});
+  }
+
+  function setShortcutDraft(input, shortcut) {
+    input.value = shortcut;
+    shortcutDrafts.add(input.form.dataset.shortcut);
+    input.form.querySelector('[data-clear]').disabled = false;
+    $('scene-shortcut-status').hidden = true;
+  }
+
+  function recordShortcut(event) {
+    const modifiers = [];
+    if (event.ctrlKey) modifiers.push('Ctrl');
+    if (event.altKey) modifiers.push('Alt');
+    if (event.shiftKey) modifiers.push('Shift');
+    if (event.metaKey) modifiers.push('Super');
+    if ((!modifiers.length && ['Enter', 'Escape'].includes(event.key)) || (event.key === 'Tab' && modifiers.every(modifier => modifier === 'Shift'))) return;
+    event.preventDefault();
+    if (event.repeat || event.isComposing || shortcutModifiers.includes(event.key)) return;
+    let key = event.key === ' ' ? 'Space' : event.key.replace(/^Arrow/, '');
+    if (!/^\d$/.test(key) && /^Digit\d$/.test(event.code)) key = event.code.slice(-1);
+    const functionKey = /^F(?:[1-9]|1\d|2[0-4])$/.test(key);
+    if (!functionKey && (!modifiers.length || !(/^[a-z0-9]$/i.test(key) || shortcutNavigationKeys.has(key)))) return;
+    if (/^[a-z]$/i.test(key)) key = key.toUpperCase();
+    setShortcutDraft(event.currentTarget, [...modifiers, key].join('+'));
+  }
+
+  $('open-scene-shortcuts').addEventListener('click', () => shortcutDialog.showModal());
+  $('close-scene-shortcuts').addEventListener('click', () => shortcutDialog.close());
+  shortcutDialog.addEventListener('focusin', syncShortcutRecorder);
+  shortcutDialog.addEventListener('focusout', () => queueMicrotask(syncShortcutRecorder));
+  shortcutDialog.addEventListener('close', syncShortcutRecorder);
+  window.aula.onSceneShortcutCaptured(shortcut => {
+    const input = focusedShortcutInput();
+    if (input) setShortcutDraft(input, shortcut);
+  });
+  for (const form of shortcutForms) {
+    const name = form.dataset.shortcut;
+    const input = form.elements.shortcut;
+    const clear = form.querySelector('[data-clear]');
+    const save = form.querySelector('[type="submit"]');
+    const feedback = $('scene-shortcut-status');
+    async function assign(value) {
+      input.disabled = save.disabled = clear.disabled = true;
+      feedback.hidden = true;
+      try {
+        const result = await window.aula.sceneShortcut(name, value);
+        if (result.error) feedback.textContent = result.error;
+        else {
+          shortcutDrafts.delete(name);
+          input.value = result.binding.shortcut;
+          feedback.textContent = result.binding.active ? 'Atajo guardado.' : 'Atajo quitado.';
+        }
+      } catch { feedback.textContent = 'No se pudo actualizar el atajo.'; }
+      finally {
+        input.disabled = save.disabled = false;
+        clear.disabled = !input.value && !state?.tablet.shortcuts[name].shortcut;
+        feedback.hidden = false;
+      }
+    }
+    input.addEventListener('keydown', recordShortcut);
+    form.addEventListener('submit', event => { event.preventDefault(); if (!save.disabled) assign(input.value); });
+    clear.addEventListener('click', () => assign(''));
+  }
+  for (const command of ['start', 'stop', 'show']) action('tablet-' + command, () => window.aula.tablet(command));
+  $('tablet-composition').addEventListener('change', async event => {
+    try { await window.aula.tablet('composition', event.target.checked); }
+    catch { applyTablet(state.tablet); toast('No se pudo actualizar la vista de la tablet.'); }
+  });
   action('boo-now', async () => apply(await window.aula.booNow()));
   action('copy-url', async () => { await window.aula.copyUrl(); toast('Dirección de OBS copiada.'); });
   action('open-guide', async () => { const error = await window.aula.openGuide(); if (error) toast('No se pudo abrir la guía. Está en la carpeta de la app.'); });

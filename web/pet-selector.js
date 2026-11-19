@@ -6,6 +6,7 @@
   const search = document.getElementById('pet-search');
   const count = document.getElementById('library-count');
   const empty = document.getElementById('library-empty');
+  const visiblePreviews = new Map();
   let activePetId;
   const normalize = value => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('es');
 
@@ -27,22 +28,46 @@
   }
   let busy = false;
   let fetchingFrames = false;
+  const observer = new IntersectionObserver(entries => {
+    for (const { target, isIntersecting } of entries) {
+      const id = target.dataset.petId;
+      if (!target.isConnected) continue;
+      if (isIntersecting && !target.hidden && !visiblePreviews.has(id)) {
+        const animation = document.createElement('iframe');
+        animation.src = `/overlay?surface=library&pet=${encodeURIComponent(id)}`;
+        animation.title = `Animación de ${target.querySelector('h2').textContent}`;
+        animation.tabIndex = -1;
+        target.querySelector('.pet-preview').append(animation);
+        visiblePreviews.set(id, animation);
+      } else if (!isIntersecting || target.hidden) {
+        visiblePreviews.get(id)?.remove();
+        visiblePreviews.delete(id);
+      }
+    }
+  }, { rootMargin: '64px 0px' });
+
   async function animatePreviews() {
-    if (fetchingFrames || !grid.children.length) return;
+    if (fetchingFrames || !visiblePreviews.size) return;
     fetchingFrames = true;
     try {
-      const response = await fetch('/library-frames');
+      const query = new URLSearchParams();
+      for (const id of visiblePreviews.keys()) query.append('pet', id);
+      const response = await fetch(`/library-frames?${query}`);
       if (!response.ok) return;
       const frames = await response.json();
-      grid.querySelectorAll('.pet-choice:not([hidden])').forEach(card => {
-        const frame = frames[card.dataset.petId];
-        if (frame) card.querySelector('iframe').contentWindow.postMessage({ type: 'aula:library-frame', frame }, location.origin);
-      });
+      for (const [id, animation] of visiblePreviews) {
+        const frame = frames[id];
+        if (frame) animation.contentWindow?.postMessage({ type: 'aula:library-frame', frame }, location.origin);
+      }
     } catch { /* El siguiente fotograma reintenta la conexión local. */ }
     finally { fetchingFrames = false; }
   }
   const animationTimer = setInterval(animatePreviews, 50);
-  window.addEventListener('pagehide', () => clearInterval(animationTimer));
+  window.addEventListener('pagehide', () => {
+    clearInterval(animationTimer);
+    observer.disconnect();
+    visiblePreviews.clear();
+  });
   function markSelected(id) {
     activePetId = id;
     grid.querySelectorAll('.pet-choice').forEach(card => {
@@ -70,9 +95,7 @@
       card.dataset.searchName = normalize(pet.name);
       const preview = document.createElement('div'); preview.className = 'pet-preview';
       const selected = document.createElement('span'); selected.className = 'selected-label'; selected.textContent = 'Selección actual';
-      const animation = document.createElement('iframe'); animation.src = `/overlay?surface=library&pet=${encodeURIComponent(pet.id)}`;
-      animation.title = `Animación de ${pet.name}`; animation.tabIndex = -1;
-      preview.append(selected, animation);
+      preview.append(selected);
       const footer = document.createElement('div'); footer.className = 'pet-choice-footer';
       const name = document.createElement('h2'); name.textContent = pet.name;
       const button = document.createElement('button'); button.className = 'secondary-button'; button.setAttribute('aria-label', `Elegir ${pet.name}`);
@@ -91,6 +114,7 @@
       });
       footer.append(name, button); card.append(preview, footer); return card;
     });
+    observer.disconnect(); visiblePreviews.clear();
     grid.replaceChildren(...cards);
     markSelected(library.activePetId);
     search.disabled = !cards.length;
@@ -99,6 +123,7 @@
     status.hidden = cards.length > 0 && !library.unavailable;
     status.textContent = library.unavailable ? 'Algunos archivos no se pudieron leer. Las mascotas disponibles aparecen aquí.' : 'Todavía no hay mascotas. Añade una para comenzar.';
     document.documentElement.dataset.libraryReady = 'true';
+    for (const card of cards) observer.observe(card);
   }
   document.getElementById('back-panel').addEventListener('click', () => backToScene().catch(() => {
     status.hidden = false;

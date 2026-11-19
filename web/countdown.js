@@ -19,7 +19,7 @@
       this.sound = sound;
       this.surface = surface;
       this.textKey = '';
-      this.lastBell = null;
+      this.lastBell = surface === 'tablet' ? sessionStorage.getItem('aula:tablet-bell') : null;
       this.audio = sound ? new Audio('/boxing-bell.wav') : null;
       if (this.audio) { this.audio.preload = 'auto'; this.audio.volume = .75; }
     }
@@ -42,6 +42,7 @@
       }
       if (this.audio && connected && timer.bell && this.lastBell !== timer.runId) {
         this.lastBell = timer.runId;
+        if (this.surface === 'tablet') sessionStorage.setItem('aula:tablet-bell', this.lastBell);
         this.audio.currentTime = 0;
         this.audio.play().then(() => { element.dataset.audio = 'played'; element.dataset.bellCount = String(Number(element.dataset.bellCount || 0) + 1); }).catch(() => { element.dataset.audio = 'blocked'; });
       }

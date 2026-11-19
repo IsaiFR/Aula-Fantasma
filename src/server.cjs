@@ -8,6 +8,7 @@ const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inl
 const ROUTES = {
   '/countdown.js': ['countdown.js', 'text/javascript; charset=utf-8'],
   '/countdown.css': ['countdown.css', 'text/css; charset=utf-8'],
+  '/theme.css': ['theme.css', 'text/css; charset=utf-8'],
   '/boxing-bell.wav': ['boxing-bell.wav', 'audio/wav'],
   '/microphone': ['microphone.html', 'text/html; charset=utf-8'],
   '/microphone.js': ['microphone.js', 'text/javascript; charset=utf-8'],
@@ -17,6 +18,16 @@ const ROUTES = {
   '/panel': ['panel.html', 'text/html; charset=utf-8'],
   '/panel.js': ['panel.js', 'text/javascript; charset=utf-8'],
   '/panel.css': ['panel.css', 'text/css; charset=utf-8'],
+  '/tablet': ['tablet.html', 'text/html; charset=utf-8'],
+  '/tablet.js': ['tablet.js', 'text/javascript; charset=utf-8'],
+  '/tablet.css': ['tablet.css', 'text/css; charset=utf-8'],
+  '/stinger': ['stinger.html', 'text/html; charset=utf-8'],
+  '/stinger.css': ['stinger.css', 'text/css; charset=utf-8'],
+  '/stinger.js': ['stinger.js', 'text/javascript; charset=utf-8'],
+  '/scenes/xmas-stinger-horizontal.webm': ['scenes/xmas-stinger-horizontal.webm', 'video/webm'],
+  '/scenes/xmas-stinger-vertical.webm': ['scenes/xmas-stinger-vertical.webm', 'video/webm'],
+  '/scenes/Inicio_xmas.png': ['scenes/Inicio_xmas.png', 'image/png'],
+  '/scenes/Despedida_xmas.png': ['scenes/Despedida_xmas.png', 'image/png'],
   '/pets': ['pet-selector.html', 'text/html; charset=utf-8'],
   '/pet-selector.js': ['pet-selector.js', 'text/javascript; charset=utf-8'],
   '/pet-selector.css': ['pet-selector.css', 'text/css; charset=utf-8'],
@@ -51,8 +62,9 @@ async function startServer({ webRoot, getFrame, getVoiceFrame = () => null, getA
       'Content-Security-Policy': CSP, 'Cross-Origin-Resource-Policy': 'same-origin'
     };
     if (url.pathname === '/library-frames') {
+      const ids = url.searchParams.getAll('pet');
       res.writeHead(200, { ...headers, 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(getLibraryFrames())); return;
+      res.end(JSON.stringify(getLibraryFrames(ids.length ? [...new Set(ids)].slice(0, 64) : undefined))); return;
     }
     if (url.pathname === '/events') {
       const petId = url.searchParams.get('pet');
@@ -61,7 +73,8 @@ async function startServer({ webRoot, getFrame, getVoiceFrame = () => null, getA
       if (!frame) { res.writeHead(404, headers).end(); return; }
       res.writeHead(200, { ...headers, 'Content-Type': 'text/event-stream', Connection: 'keep-alive' });
       res.write(`retry: 1500\nevent: frame\ndata: ${JSON.stringify(frame)}\n\n`);
-      const kind = petId ? 'library' : slot === 'voice' ? 'layer' : ['desktop', 'preview'].includes(url.searchParams.get('surface')) ? url.searchParams.get('surface') : 'obs';
+      const surface = url.searchParams.get('surface');
+      const kind = petId ? 'library' : slot === 'voice' ? 'layer' : ['desktop', 'preview', 'tablet'].includes(surface) ? surface : 'obs';
       clients.set(res, { kind, petId, slot });
       onClients(stats());
       req.on('close', () => { clients.delete(res); onClients(stats()); });

@@ -44,7 +44,7 @@ test('Las animaciones del selector son independientes y no cuentan como OBS; rec
   const id = 'a'.repeat(64), image = Buffer.from([1, 2, 3]);
   const server = await startServer({ webRoot: path.join(__dirname, '..', 'web'), getFrame: () => fixture,
     getLibraryFrame: pet => pet === id ? { ...fixture, library: true } : null,
-    getLibraryFrames: () => ({ [id]: { ...fixture, library: true } }),
+    getLibraryFrames: pets => !pets || pets.includes(id) ? { [id]: { ...fixture, library: true } } : {},
     getAsset: (kind, pet) => pet === id && kind === 'open' ? { mime: 'image/png', bytes: image } : null, preferredPort: 0 });
   t.after(() => server.close());
   const abort = new AbortController(); t.after(() => abort.abort());
@@ -53,6 +53,8 @@ test('Las animaciones del selector son independientes y no cuentan como OBS; rec
   assert.match(new TextDecoder().decode((await reader.read()).value), /"library":true/);
   assert.equal(server.stats().obs, 0);
   assert.deepEqual(await (await fetch(`${server.url}/library-frames`)).json(), { [id]: { ...fixture, library: true } });
+  assert.deepEqual(await (await fetch(`${server.url}/library-frames?pet=${id}`)).json(), { [id]: { ...fixture, library: true } });
+  assert.deepEqual(await (await fetch(`${server.url}/library-frames?pet=unknown`)).json(), {});
   server.publish({ ...fixture, activeOnly: true });
   const published = new TextDecoder().decode((await reader.read()).value);
   assert.match(published, /"library":true/); assert.doesNotMatch(published, /activeOnly/);

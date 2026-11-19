@@ -18,6 +18,21 @@ module.exports = async function({ BrowserWindow, smokeRoot, panel, desktop, coun
     const rect=el.getBoundingClientRect();
     return { hidden:el.hidden, phase:el.dataset.phase, remaining:Number(el.dataset.remaining), digits:el.querySelector('.timer-digits').textContent, caption:el.querySelector('.timer-caption').textContent, left:rect.left, bottom:innerHeight-rect.bottom, right:rect.right, top:rect.top, audio:el.dataset.audio, bells:Number(el.dataset.bellCount||0) };
   })()`);
+  const assertCentered = async (window, cardSelector, digitsSelector) => {
+    const centered = await window.webContents.executeJavaScript(`(() => {
+      const card = document.querySelector(${JSON.stringify(cardSelector)}).getBoundingClientRect();
+      const digits = document.querySelector(${JSON.stringify(digitsSelector)});
+      const row = digits.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(digits);
+      const text = range.getBoundingClientRect();
+      return card.height > 0 && text.width > 0
+        && Math.abs((row.top + row.bottom) - (card.top + card.bottom)) < 2
+        && Math.abs((text.left + text.right) - (card.left + card.right)) < 2
+        && text.left > card.left && text.right < card.right;
+    })()`);
+    assert.ok(centered, `Dígitos centrados y contenidos en ${cardSelector}`);
+  };
   const capture = async (window, name) => {
     const image = await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('No se pudo capturar el temporizador.')), 3000);
@@ -67,16 +82,23 @@ module.exports = async function({ BrowserWindow, smokeRoot, panel, desktop, coun
       await js(`document.getElementById('timer-${key}').value='${value}';document.getElementById('timer-${key}').dispatchEvent(new Event('change'))`);
       await wait(() => countdown.config[key] === value, 'Coordenada ' + key);
     }
+    await js('window.aula.countdown("configure", { seconds: 5999 })');
     await js('document.getElementById("timer-position").click()');
     await wait(async () => (await view(obs))?.phase === 'position', 'Previsualizar posición');
     const position = await view(obs); assert.equal(position.left, 120); assert.equal(position.bottom, 90);
     await wait(async () => !(await view(desktop)).hidden, 'Posición visible en monitor sin mascotas');
+    assert.equal(position.digits, '99:59');
+    await assertCentered(panel, '#timer-console', '#timer-display');
+    await assertCentered(obs, '#class-countdown', '.timer-digits');
+    await js('window.aula.countdown("configure", { seconds: 120 })');
     checks.bottomLeftOrigin = true;
     checks.desktopIndependentFromPets = true;
     await js('document.getElementById("timer-start").click()');
     await at(0, v => v?.phase === 'ready' && v.digits === '3' && !v.hidden);
     assert.equal(await js('document.getElementById("timer-duration").disabled'), true);
     assert.equal(await js('document.getElementById("timer-display").textContent'), '3');
+    await assertCentered(panel, '#timer-console', '#timer-display');
+    await assertCentered(obs, '#class-countdown', '.timer-digits');
     await capture(panel, 'countdown-panel.png');
     await at(1, v => v?.digits === '2'); await at(2, v => v?.digits === '1');
     await at(3, v => v?.phase === 'running' && v.digits === '2:00' && !v.hidden);
@@ -104,6 +126,10 @@ module.exports = async function({ BrowserWindow, smokeRoot, panel, desktop, coun
     assert.equal((await view(obs)).bells, 1); assert.equal((await view(panel)).bells, 0); assert.equal((await view(desktop)).bells, 0);
     checks.bellPlaysOnceOnlyInObs = true;
     await at(120, v => v?.remaining === 3 && !v.hidden);
+    await assertCentered(panel, '#timer-console', '#timer-display');
+    await assertCentered(desktop, '#class-countdown', '.timer-digits');
+    await assertCentered(obs, '#class-countdown', '.timer-digits');
+    checks.centeredDigits = true;
     const image = await capture(obs, 'countdown-last-three.png');
     // Píxel superior izquierdo: la fuente conserva transparencia fuera del contador.
     assert.equal(image.toBitmap()[3], 0);

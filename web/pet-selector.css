@@ -4,32 +4,36 @@
   margin: auto;
 }
 .selector-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
-.selector-heading p { color: var(--muted); margin-top: 8px; }
+.selector-heading p { color: var(--muted-on-dark); margin-top: 8px; }
 .selector-heading button { flex: none; }
 .library-tools { display: flex; align-items: end; gap: 8px; margin-bottom: 15px; }
 .library-search { flex: 1; min-width: 0; max-width: 390px; }
 .library-search input { width: 100%; }
 .library-search .field-label { margin-top: 0; }
-.format-chip { padding: 7px 9px; border-radius: 6px; background: var(--accent-wash); color: var(--accent-strong); font: 700 12px Consolas, monospace; }
-#library-count { margin-left: auto; align-self: end; padding-bottom: 7px; white-space: nowrap; color: var(--muted); font-size: 12px; }
-#library-status, #library-empty { margin: 0 0 16px; color: var(--muted); }
-#library-empty { padding: 24px; border: 1px dashed #cbbbdc; border-radius: var(--radius); text-align: center; }
+.format-chip { padding: 7px 9px; border-radius: 6px; background: var(--accent-wash); color: var(--ink); font: 700 12px Consolas, monospace; }
+#library-count { margin-left: auto; align-self: end; padding-bottom: 7px; white-space: nowrap; color: var(--muted-on-dark); font-size: 12px; }
+#library-status, #library-empty { margin: 0 0 16px; color: var(--muted-on-dark); }
+#library-empty { padding: 24px; border: 1px dashed var(--control-line); border-radius: var(--radius); text-align: center; }
 .pet-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.pet-choice { min-width: 0; padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
-.pet-choice:hover { border-color: #baa4d0; }
-.pet-choice.selected { border-color: #9a7bc7; box-shadow: 0 0 0 1px #c7afe8; }
+.pet-choice { min-width: 0; padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.pet-choice:hover { border-color: var(--control-line); }
+.pet-choice.selected { border-color: var(--ink); box-shadow: 0 0 0 2px var(--accent); }
 .pet-preview {
   position: relative;
   overflow: hidden;
   height: clamp(150px, 20vw, 245px);
   border-radius: 9px;
   color-scheme: normal;
-  background: radial-gradient(circle, #a586d032 1px, transparent 1.5px) center / 18px 18px,
-              radial-gradient(ellipse at 50% 90%, #e4d2fa, #f4eaff 65%);
+  --dots: color-mix(in srgb, var(--principal) 18%, transparent);
+  --preview-center: var(--field);
+  --preview-edge: var(--secondary);
+  background: radial-gradient(circle, var(--dots) 1px, transparent 1.5px) center / 18px 18px,
+              radial-gradient(ellipse at 50% 90%, var(--preview-center), var(--preview-edge) 72%);
 }
 .pet-choice:nth-child(3n+2) .pet-preview {
-  background: radial-gradient(circle, #a86d5e2e 1px, transparent 1.5px) center / 18px 18px,
-              radial-gradient(ellipse at 50% 90%, #f9d5cd, #f9eee9 65%);
+  --dots: color-mix(in srgb, var(--secondary) 18%, transparent);
+  --preview-center: var(--raised-hover);
+  --preview-edge: var(--principal);
 }
 .pet-preview iframe { display: block; border: 0; width: 100%; height: 100%; pointer-events: none; }
 .selected-label {
@@ -39,15 +43,15 @@
   z-index: 1;
   padding: 4px 7px;
   border-radius: 5px;
-  background: #3d2760;
-  color: #fff;
+  background: var(--accent);
+  color: var(--ink);
   font-size: 10px;
   font-weight: 700;
 }
 .pet-choice-footer { display: flex; align-items: center; justify-content: space-between; padding: 8px 4px 2px; gap: 7px; }
 .pet-choice h2 { font-size: 15px; overflow-wrap: anywhere; }
 .pet-choice button { min-height: 32px; flex: none; }
-.pet-choice.selected button:disabled { opacity: 1; color: var(--accent); background: var(--accent-wash); border-color: transparent; }
+.pet-choice.selected button:disabled { opacity: 1; color: var(--ink); background: var(--accent-wash); border-color: var(--control-line); }
 @media (max-width: 740px) {
   .pet-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aula Fantasma</title>
   <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/theme.css">
   <link rel="stylesheet" href="panel.css">
   <link rel="stylesheet" href="pet.css">
   <link rel="stylesheet" href="countdown.css">
@@ -40,6 +41,53 @@
         </div>
       </header>
 
+      <section class="presentation-scenes" aria-labelledby="presentation-scenes-title">
+        <header class="presentation-scenes-heading">
+          <h2 id="presentation-scenes-title">Escenas de la ventana compartida</h2>
+          <button id="open-scene-shortcuts" class="primary-button" type="button" aria-haspopup="dialog" aria-controls="scene-shortcuts">Atajos de escenas</button>
+        </header>
+        <div class="presentation-scene-buttons">
+          <button id="present-inicio" type="button" data-scene="inicio" aria-pressed="false">Inicio<kbd hidden></kbd></button>
+          <button id="present-apuntes" type="button" data-scene="apuntes" aria-pressed="false">Apuntes<kbd hidden></kbd></button>
+          <button id="present-receso" type="button" data-scene="receso" aria-pressed="false">Receso<kbd hidden></kbd></button>
+          <button id="present-despedida" type="button" data-scene="despedida" aria-pressed="false">Despedida<kbd hidden></kbd></button>
+        </div>
+        <p id="recess-status" role="status" hidden></p>
+      </section>
+
+      <dialog id="scene-shortcuts" class="scene-shortcuts" aria-labelledby="scene-shortcuts-title">
+          <header>
+            <h2 id="scene-shortcuts-title">Atajos de escenas</h2>
+            <button id="close-scene-shortcuts" class="secondary-button" type="button">Cerrar</button>
+          </header>
+          <p id="scene-shortcut-help">Selecciona un campo y pulsa la combinación, por ejemplo <kbd>Ctrl+Alt+1</kbd>, <kbd>Shift+A</kbd> o <kbd>F8</kbd>. Luego pulsa Guardar.</p>
+          <form data-shortcut="inicio">
+            <label for="shortcut-inicio">Inicio</label>
+            <input id="shortcut-inicio" name="shortcut" type="text" placeholder="Pulsa un atajo" aria-describedby="scene-shortcut-help" readonly autofocus>
+            <button class="secondary-button" type="submit">Guardar</button><button class="text-button" type="button" data-clear aria-label="Quitar atajo de Inicio">Quitar</button>
+            <small data-unavailable hidden>Atajo ocupado en Windows.</small>
+          </form>
+          <form data-shortcut="apuntes">
+            <label for="shortcut-apuntes">Apuntes</label>
+            <input id="shortcut-apuntes" name="shortcut" type="text" placeholder="Pulsa un atajo" aria-describedby="scene-shortcut-help" readonly>
+            <button class="secondary-button" type="submit">Guardar</button><button class="text-button" type="button" data-clear aria-label="Quitar atajo de Apuntes">Quitar</button>
+            <small data-unavailable hidden>Atajo ocupado en Windows.</small>
+          </form>
+          <form data-shortcut="receso">
+            <label for="shortcut-receso">Receso</label>
+            <input id="shortcut-receso" name="shortcut" type="text" placeholder="Pulsa un atajo" aria-describedby="scene-shortcut-help" readonly>
+            <button class="secondary-button" type="submit">Guardar</button><button class="text-button" type="button" data-clear aria-label="Quitar atajo de Receso">Quitar</button>
+            <small data-unavailable hidden>Atajo ocupado en Windows.</small>
+          </form>
+          <form data-shortcut="despedida">
+            <label for="shortcut-despedida">Despedida</label>
+            <input id="shortcut-despedida" name="shortcut" type="text" placeholder="Pulsa un atajo" aria-describedby="scene-shortcut-help" readonly>
+            <button class="secondary-button" type="submit">Guardar</button><button class="text-button" type="button" data-clear aria-label="Quitar atajo de Despedida">Quitar</button>
+            <small data-unavailable hidden>Atajo ocupado en Windows.</small>
+          </form>
+          <p id="scene-shortcut-status" role="status" hidden></p>
+      </dialog>
+
       <section class="layer-board" aria-labelledby="layers-title">
         <h2 id="layers-title" class="sr-only">Capas de la escena</h2>
         <div class="pet-modes">
@@ -69,6 +117,12 @@
             <button id="edit-timer" class="mode-edit" type="button" aria-controls="inspector" aria-pressed="false">
               <span class="layer-art timer-art" aria-hidden="true"><span class="icon icon-clock"></span></span>
               <span class="layer-info"><span>Cronómetro</span><strong id="timer-layer-state">Listo</strong></span>
+            </button>
+          </article>
+          <article class="mode-card" id="mode-tablet">
+            <button id="edit-tablet" class="mode-edit" type="button" aria-controls="inspector" aria-pressed="false">
+              <span class="layer-art" aria-hidden="true"><span class="icon icon-tablet"></span></span>
+              <span class="layer-info"><span>Tablet por USB</span><strong id="tablet-layer-state">Desconectada</strong></span>
             </button>
           </article>
         </div>
@@ -164,8 +218,10 @@
           <div class="timer-console" id="timer-console">
             <p id="timer-display-label">Duración</p>
             <div id="timer-display" class="timer-display" role="timer" aria-labelledby="timer-display-label">2:00</div>
-            <div id="timer-progress" class="timer-progress" aria-hidden="true"><span></span></div>
-            <p id="timer-status" role="status">Listo para iniciar</p>
+            <div class="timer-feedback">
+              <div id="timer-progress" class="timer-progress" aria-hidden="true"><span></span></div>
+              <p id="timer-status" role="status">Listo para iniciar</p>
+            </div>
           </div>
           <div class="timer-controls">
             <div class="timer-presets" role="group" aria-label="Duraciones rápidas">
@@ -188,7 +244,7 @@
           </div>
           <div class="card timer-options">
             <label class="toggle-row"><span><strong>También en mi escritorio</strong><small>Muestra el cronómetro sobre tus ventanas.</small></span><input id="timer-desktop" type="checkbox" role="switch"><span class="switch" aria-hidden="true"></span></label>
-            <details><summary>Posición en OBS y escritorio</summary>
+            <details><summary>Posición del cronómetro</summary>
               <div class="timer-coordinates">
                 <label for="timer-x">X · derecha (px)<input id="timer-x" type="number" min="0" max="1600" step="10" value="48"></label>
                 <label for="timer-y">Y · arriba (px)<input id="timer-y" type="number" min="0" max="924" step="10" value="48"></label>
@@ -198,8 +254,26 @@
             </details>
             <details><summary>Avisos y campana</summary>
               <p class="hint">Tras 3 s de preparación, el contador aparece 5 s y se oculta. Suena una campana cuando quedan 10 s y el contador reaparece en los últimos 3 s.</p>
-              <p class="hint">La campana se reproduce en la fuente Navegador de OBS. Activa «Controlar audio vía OBS» para ajustar el volumen.</p>
+              <p class="hint">Al compartir la ventana de la tablet, incluye su audio para transmitir la campana. En OBS, el volumen se ajusta desde la fuente Navegador.</p>
             </details>
+          </div>
+        </section>
+
+        <section id="tablet-settings" aria-label="Tablet por USB" hidden>
+          <div class="card">
+            <h3>Conexión</h3>
+            <p id="tablet-status" class="hint" role="status">Conecta tu tablet Android con un cable USB de datos.</p>
+            <div class="tablet-actions">
+              <button id="tablet-start" class="primary-button" type="button">Conectar tablet</button>
+              <button id="tablet-show" class="secondary-button" type="button" hidden>Mostrar ventana</button>
+              <button id="tablet-stop" class="secondary-button" type="button" hidden>Cerrar ventana</button>
+            </div>
+            <details><summary>Preparar la tablet</summary><p class="hint">Activa la depuración USB en las opciones de desarrollador de Android. Desbloquea la tablet y acepta «Permitir depuración USB» cuando aparezca el aviso.</p></details>
+          </div>
+          <div class="card">
+            <h3>Compartir en clase</h3>
+            <p class="hint">Selecciona la ventana <strong>Aula Fantasma · Tablet</strong> al compartir en tu videollamada.</p>
+            <label class="toggle-row"><span><strong>Incluir mascotas y cronómetro</strong><small>Desactiva esta opción si tu escena de OBS ya añade esas capas.</small></span><input id="tablet-composition" type="checkbox" role="switch" checked><span class="switch" aria-hidden="true"></span></label>
           </div>
         </section>
 
@@ -224,11 +298,6 @@
   </main>
 
   <footer class="studio-footer">
-    <div>
-      <span>Cerrar la ventana mantiene la escena activa en la bandeja.</span>
-      <div class="shortcuts"><span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>P</kbd> Pausar</span><span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>H</kbd> Mostrar u ocultar</span></div>
-      <p id="shortcut-warning" class="hint" hidden>Algún atajo está ocupado. Puedes usar el icono de la bandeja.</p>
-    </div>
     <button id="quit" type="button" class="text-button">Salir de Aula Fantasma</button>
   </footer>
   <div id="toast" role="status" aria-live="polite"></div>

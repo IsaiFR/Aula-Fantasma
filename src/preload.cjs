@@ -4,6 +4,12 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('aula', {
   getState: () => ipcRenderer.invoke('aula:state'),
   countdown: (action, patch) => ipcRenderer.invoke('aula:countdown', action, patch),
+  tablet: (action, value) => ipcRenderer.invoke('aula:tablet', action, value),
+  sceneShortcut: (scene, value) => ipcRenderer.invoke('aula:scene-shortcut', scene, value),
+  recordSceneShortcut: recording => ipcRenderer.invoke('aula:scene-shortcut-recording', recording),
+  onSceneShortcutCaptured: callback => {
+    ipcRenderer.on('aula:scene-shortcut-captured', (_event, shortcut) => callback(shortcut));
+  },
   setCanvasFormat: format => ipcRenderer.invoke('aula:canvas', format),
   editType: type => ipcRenderer.invoke('aula:edit-type', type),
   setSettings: (patch, type) => ipcRenderer.invoke('aula:settings', patch, type),

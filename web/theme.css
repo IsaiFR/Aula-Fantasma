@@ -1,0 +1,6 @@
+:root {
+  /* Conversión CMYK a sRGB sin perfil de impresión. */
+  --principal: #2a1c2e;
+  --secondary: #e8dcc5;
+  --accent: #b5f500;
+}

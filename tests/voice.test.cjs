@@ -52,13 +52,13 @@ test('Los cuatro .pet de Halloween conservan cuatro poses transparentes distinta
     assert.throws(() => parsePet(Buffer.from(JSON.stringify(broken))), /parpadeo/);
   }
 });
-test('La biblioteca importa .pet y .aulapet sin duplicar ni interpretar .pet como imagen', t => {
+test('La biblioteca importa .pet y .aulapet sin duplicar ni interpretar .pet como imagen', async t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'aula-voice-test-'));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const bytes = fs.readFileSync(path.join(root, 'pets', 'EduWitch-Voz.pet'));
   fs.writeFileSync(path.join(directory, 'witch.pet'), bytes); fs.writeFileSync(path.join(directory, 'duplicate.aulapet'), bytes);
   fs.writeFileSync(path.join(directory, 'broken.pet'), 'not JSON');
-  const library = loadLibrary([directory]); assert.equal(library.entries.size, 1); assert.equal(library.unavailable, 1);
+  const library = await loadLibrary([directory]); assert.equal(library.entries.size, 1); assert.equal(library.unavailable, 1);
   assert.ok(library.entries.has(petId(parsePet(bytes))));
 });
 test('VDD decodifica canales constantes, deltas, transparencia y rechaza truncados', () => {

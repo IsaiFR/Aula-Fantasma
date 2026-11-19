@@ -22,9 +22,9 @@
 #pet-closed {
   mask-repeat: no-repeat;
 }
-#boo { position: absolute; left: 0; top: 0; visibility: hidden; pointer-events: none; z-index: 5; box-sizing: border-box; padding: .38em .68em; background: #fff8ef; color: #332142; border: .1em solid #3b2850; border-radius: .62em; font: 800 22px/1.1 "Segoe UI", system-ui, sans-serif; letter-spacing: .03em; white-space: nowrap; transform-origin: center; filter: drop-shadow(0 .12em .12em #0002); }
-#boo::after { content: ''; position: absolute; width: .44em; height: .44em; background: #fff8ef; transform: rotate(45deg); }
-#boo[data-placement="above"]::after { left: calc(var(--tail-x) - .22em); bottom: -.32em; border-right: .1em solid #3b2850; border-bottom: .1em solid #3b2850; }
-#boo[data-placement="below"]::after { left: calc(var(--tail-x) - .22em); top: -.32em; border-left: .1em solid #3b2850; border-top: .1em solid #3b2850; }
-#boo[data-placement="left"]::after { right: -.32em; top: calc(var(--tail-y) - .22em); border-right: .1em solid #3b2850; border-top: .1em solid #3b2850; }
-#boo[data-placement="right"]::after { left: -.32em; top: calc(var(--tail-y) - .22em); border-left: .1em solid #3b2850; border-bottom: .1em solid #3b2850; }
+#boo { position: absolute; left: 0; top: 0; visibility: hidden; pointer-events: none; z-index: 5; box-sizing: border-box; padding: .38em .68em; background: var(--secondary); color: var(--principal); border: .1em solid var(--principal); border-radius: .62em; font: 800 22px/1.1 "Segoe UI", system-ui, sans-serif; letter-spacing: .03em; white-space: nowrap; transform-origin: center; filter: drop-shadow(0 .12em .12em #0002); }
+#boo::after { content: ''; position: absolute; width: .44em; height: .44em; background: var(--secondary); transform: rotate(45deg); }
+#boo[data-placement="above"]::after { left: calc(var(--tail-x) - .22em); bottom: -.32em; border-right: .1em solid var(--principal); border-bottom: .1em solid var(--principal); }
+#boo[data-placement="below"]::after { left: calc(var(--tail-x) - .22em); top: -.32em; border-left: .1em solid var(--principal); border-top: .1em solid var(--principal); }
+#boo[data-placement="left"]::after { right: -.32em; top: calc(var(--tail-y) - .22em); border-right: .1em solid var(--principal); border-top: .1em solid var(--principal); }
+#boo[data-placement="right"]::after { left: -.32em; top: calc(var(--tail-y) - .22em); border-left: .1em solid var(--principal); border-bottom: .1em solid var(--principal); }

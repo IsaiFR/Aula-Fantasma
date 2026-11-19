@@ -14,7 +14,11 @@
   const surface = preview ? 'preview' : new URLSearchParams(location.search).get('surface') || 'obs';
   const libraryPet = surface === 'library' ? new URLSearchParams(location.search).get('pet') : null;
   const voiceLayer = new URLSearchParams(location.search).get('slot') === 'voice';
-  const countdown = !voiceLayer && !libraryPet && ['obs', 'preview', 'desktop'].includes(surface) ? new window.AulaCountdown(preview || document.body, surface === 'obs', surface) : null;
+  const countdown = !voiceLayer && !libraryPet && ['obs', 'preview', 'desktop', 'tablet'].includes(surface) ? new window.AulaCountdown(preview || document.body, ['obs', 'tablet'].includes(surface), surface) : null;
+  function petEnabled(settings) {
+    if (surface === 'tablet') return voiceLayer ? settings.voiceEnabled : settings.companionEnabled;
+    return surface === 'desktop' ? settings.desktopEnabled : settings.obsEnabled;
+  }
   if (!libraryPet && !voiceLayer) {
     const layer = document.createElement('iframe'); layer.id = 'voice-layer'; layer.title = 'Mascota de voz en la esquina';
     layer.src = `/overlay?slot=voice&surface=${encodeURIComponent(surface)}`;
@@ -43,7 +47,7 @@
   let lastTime = performance.now();
   let canvasRevision = null;
   function updateVisibility() {
-    const enabled = frame && (surface === 'desktop' ? frame.settings.desktopEnabled : frame.settings.obsEnabled);
+    const enabled = frame && petEnabled(frame.settings);
     const visible = connected && imageReady && enabled && frame.presence?.phase !== 'away' && (!frame.behavior?.rig || rig.ready) && (!frame.behavior?.vehicle || vehicle.ready) && (!(frame.behavior?.flipbook || frame.behavior?.cycle) || flipbook.ready);
     anchor.style.visibility = visible ? 'visible' : 'hidden';
     bubble.style.visibility = visible && frame.boo && (frame.greeting?.visible ?? true) ? 'visible' : 'hidden';
@@ -171,7 +175,7 @@
       anchor.dataset.opacityPhase = frame.ghostOpacity?.phase || 'manual';
       anchor.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       body.style.transform = `rotate(${frame.tilt || 0}deg) scaleY(${frame.stretch || 1})`;
-      const enabled = surface === 'desktop' ? settings.desktopEnabled : settings.obsEnabled;
+      const enabled = petEnabled(settings);
       cloth.render(frame, !frame.voice && connected && enabled && frame.presence?.phase !== 'away' && imageReady && Boolean(frame.animation?.cloth.enabled), frame.animation?.cloth);
       rig.render(frame, connected && enabled && frame.presence?.phase !== 'away' && imageReady);
       flipbook.render({ ...frame, facing: layout.facing ?? frame.facing }, connected && enabled && frame.presence?.phase !== 'away' && imageReady);

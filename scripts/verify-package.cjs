@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const asar = require('@electron/asar');
+const { verifyTabletRuntime } = require('./tablet-runtime.cjs');
 const root = path.join(__dirname, '..');
 const version = require('../package.json').version;
 const base = root;
@@ -29,6 +30,7 @@ if (asar.listPackage(archive).some(file => !/^[\\/](src|web|assets|pets)([\\/]|$
   throw new Error('Se incluyeron archivos de trabajo en el paquete');
 }
 if (JSON.parse(asar.extractFile(archive, 'package.json')).version !== version) throw new Error('Versión incorrecta');
+verifyTabletRuntime(path.join(base, 'resources', 'tablet'));
 if (process.argv[2]) {
   if (hash(fs.readFileSync(process.argv[2])) !== hash(fs.readFileSync(path.join(root, 'web', 'edughost', 'open.png')))) {
     throw new Error('La copia de EduGhost no coincide con el original');

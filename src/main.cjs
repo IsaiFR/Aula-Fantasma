@@ -7,7 +7,7 @@ const { performance } = require('node:perf_hooks');
 const { DEFAULTS, sanitizeSettings } = require('./settings.cjs');
 const { Motion } = require('./motion.cjs');
 const { startServer } = require('./server.cjs');
-const { MAX_FILE, MAX_IMAGE, parsePet, serializePet, fromImage, petId, safeFilename } = require('./pet-package.cjs');
+const { MAX_FILE, MAX_IMAGE, parsePet, serializePet, fromImage, petId: calculatePetId, safeFilename } = require('./pet-package.cjs');
 const { bundledUpdate } = require('./pet-updates.cjs');
 const { flipbookFrame } = require('./flipbook.cjs');
 const { gifInfo } = require('./gif.cjs');
@@ -17,7 +17,10 @@ const { canvasInfo, isCanvasFormat } = require('./canvas.cjs');
 const { ghostOpacityFrame } = require('./ghost-opacity.cjs');
 const { draculaBatFrame } = require('./dracula-bat.cjs');
 const { Countdown, DEFAULT_COUNTDOWN } = require('./countdown.cjs');
+const { createTabletPresentation, SCENES } = require('./tablet-presentation.cjs');
+const { createSceneShortcuts, normalizeShortcut } = require('./scene-shortcuts.cjs');
 const countdown = new Countdown();
+const COUNTDOWN_SHORTCUT = 'CommandOrControl+Shift+C';
 
 const root = path.join(__dirname, '..');
 const webRoot = path.join(root, 'web');
@@ -29,7 +32,19 @@ app.setName('Aula Fantasma');
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) app.quit();
 
-let panel, desktop, tray, server, timer, microphoneWindow;
+let panel, desktop, tray, server, timer, microphoneWindow, tablet;
+let tabletCompositionEnabled = true;
+let sceneShortcutRecording = false;
+const sceneShortcuts = createSceneShortcuts(globalShortcut, SCENES, (scene, shortcut) => {
+  if (forwardShortcutToRecorder(shortcut)) return;
+  tablet?.selectScene(scene).catch(error => console.error('No se pudo mostrar la escena:', error.message));
+}, COUNTDOWN_SHORTCUT);
+
+function forwardShortcutToRecorder(shortcut) {
+  if (!sceneShortcutRecording || !panel || panel.isDestroyed() || !panel.isFocused()) return false;
+  panel.webContents.send('aula:scene-shortcut-captured', shortcut);
+  return true;
+}
 const voiceGate = new VoiceGate();
 let micStatus = 'off', micDevices = [];
 function microphoneConfig() { return { enabled: Boolean(voiceSettings.micEnabled && settings.voiceEnabled && voicePet), deviceId: voiceSettings.micDeviceId }; }
@@ -67,9 +82,18 @@ let selectedPetFile = null;
 let petRevision = 0;
 let settingsTimer;
 let library = { entries: new Map(), unavailable: 0 };
+const libraryFiles = new Map();
+const petIds = new WeakMap();
+let libraryLoad;
 const rendererErrors = [];
 const motion = new Motion();
 const paths = () => ({ settings: path.join(app.getPath('userData'), 'settings.json'), assets: path.join(app.getPath('userData'), 'assets'), pets: path.join(app.getPath('userData'), 'pets') });
+
+function petId(candidate) {
+  let id = petIds.get(candidate);
+  if (!id) { id = calculatePetId(candidate); petIds.set(candidate, id); }
+  return id;
+}
 
 function builtinPet() { return parsePet(fs.readFileSync(path.join(root, 'pets', 'EduGhost.aulapet'))); }
 function activateVoicePet(candidate, persist = true) {
@@ -153,15 +177,19 @@ function activatePet(candidate, persist = true, applyPreset = true) {
 
 function loadPreferences() {
   countdown.stop(); countdown.configure(DEFAULT_COUNTDOWN);
+  tabletCompositionEnabled = true;
   canvasFormat = '16:9'; canvasProfiles = {};
   canvasPetCache.clear();
   fs.mkdirSync(paths().pets, { recursive: true });
   voiceSettings = { ...DEFAULTS, mode: 'still', size: 256, presenceEnabled: false, booEnabled: false };
   activateVoicePet(parsePet(fs.readFileSync(path.join(root, 'pets', 'EduWitch-Voz.pet'))), false);
   activatePet(builtinPet(), false);
+  let savedSceneShortcuts;
   try {
     let saved = JSON.parse(fs.readFileSync(paths().settings, 'utf8'));
+    savedSceneShortcuts = saved.sceneShortcuts;
     countdown.configure(saved.countdown);
+    tabletCompositionEnabled = saved.tabletCompositionEnabled !== false;
     if (saved.schemaVersion === 5) {
       canvasFormat = isCanvasFormat(saved.canvasFormat) ? saved.canvasFormat : '16:9';
       for (const format of ['16:9', '9:16']) if (saved.canvasProfiles?.[format] && typeof saved.canvasProfiles[format] === 'object') canvasProfiles[format] = saved.canvasProfiles[format];
@@ -212,6 +240,7 @@ function loadPreferences() {
       activeType = saved.activeType === 'voice' ? 'voice' : 'companion';
     }
   } catch { /* Primera ejecución o preferencias no válidas: usar valores por defecto. */ }
+  sceneShortcuts.restore(savedSceneShortcuts);
   syncMicrophone();
   canvasProfiles[canvasFormat] = captureCanvasProfile();
 }
@@ -270,7 +299,7 @@ function savePreferences() {
   const temporary = `${file}.tmp`;
   try {
     canvasProfiles[canvasFormat] = captureCanvasProfile();
-    fs.writeFileSync(temporary, JSON.stringify({ ...captureCanvasProfile(), schemaVersion: 5, canvasFormat, canvasProfiles, countdown: countdown.config }, null, 2));
+    fs.writeFileSync(temporary, JSON.stringify({ ...captureCanvasProfile(), schemaVersion: 5, canvasFormat, canvasProfiles, countdown: countdown.config, tabletCompositionEnabled, sceneShortcuts: sceneShortcuts.values() }, null, 2));
     fs.renameSync(temporary, file);
   } catch (error) { console.error('No se pudieron guardar las preferencias:', error.message); }
 }
@@ -321,7 +350,7 @@ function getVoiceFrame() {
   return { ...frame, x: voiceSettings.corner.endsWith('right') ? 1 : 0, y: voiceSettings.corner.startsWith('bottom') ? 1 : 0,
     bob: frame.bob, tilt: frame.tilt, stretch: frame.stretch, boo: false,
     canvas: { ...canvasInfo(canvasFormat), revision: canvasRevision },
-    settings: { ...voiceSettings, desktopEnabled: settings.desktopEnabled && settings.voiceEnabled, obsEnabled: settings.obsEnabled && settings.voiceEnabled },
+    settings: { ...voiceSettings, voiceEnabled: settings.voiceEnabled, desktopEnabled: settings.desktopEnabled && settings.voiceEnabled, obsEnabled: settings.obsEnabled && settings.voiceEnabled },
     assetUrl: `/asset${suffix}`, closedAssetUrl: voicePet.images.closed ? `/asset-closed${suffix}` : null,
     animation: voicePet.animation, behavior: voiceMotion.behavior, ghostOpacity: ghostOpacityFrame(voiceMotion.elapsed - ghostOpacityStart, voiceSettings, voicePet.effects), draculaBat: draculaBatFrame(voiceMotion.elapsed - draculaBatStart, voiceSettings, voicePet.effects), voice: { ...voiceFrame(voicePet, voiceMotion, suffix), mirrored: voiceSettings.corner.endsWith('right') }, timestamp: Date.now() };
 }
@@ -330,6 +359,7 @@ function snapshot() {
   const candidate = currentPet(), selectedSettings = currentSettings();
   return {
     countdown: countdown.frame(canvasInfo(canvasFormat)),
+    tablet: { ...tablet.snapshot(), compositionEnabled: tabletCompositionEnabled, shortcuts: sceneShortcuts.snapshot() },
     activePetId: petId(candidate), activeType, canvas: canvasInfo(canvasFormat),
     companions: { voice: { id: petId(voicePet), name: voicePet.name, enabled: settings.voiceEnabled }, companion: { id: petId(pet), name: pet.name, enabled: settings.companionEnabled } },
     settings: selectedSettings, displays: displays(), obsUrl: `${server?.url || ''}/overlay`,
@@ -339,7 +369,7 @@ function snapshot() {
     microphone: { status: micStatus, devices: micDevices },
     assetUrl: activeType === 'voice' ? `/asset?slot=voice&v=${voiceRevision}` : `/asset?v=${petRevision}`,
     customImage: Boolean(activeType === 'voice' ? voiceSelectedFile : selectedPetFile), version: app.getVersion(),
-    shortcutsAvailable: !smoke && globalShortcut.isRegistered('CommandOrControl+Alt+P') && globalShortcut.isRegistered('CommandOrControl+Alt+H')
+    countdownShortcutAvailable: globalShortcut.isRegistered(COUNTDOWN_SHORTCUT)
   };
 }
 
@@ -348,6 +378,15 @@ function notify() {
   if (panel && !panel.isDestroyed()) panel.webContents.send('aula:changed', snapshot());
   server?.publish(getFrame());
   updateTray();
+}
+
+function controlCountdown(action, patch) {
+  if (action === 'configure') { countdown.configure(patch); applyDesktop(); scheduleSave(); }
+  else if (action === 'start') countdown.start();
+  else if (action === 'stop') countdown.stop();
+  else if (action === 'position' && !countdown.frame().active) countdown.togglePosition();
+  else throw new Error('Acción de temporizador no válida.');
+  notify();
 }
 
 function secureWindow(win) {
@@ -424,30 +463,45 @@ function changeSettings(patch, type = activeType) {
 }
 
 function refreshLibrary() {
-  library = loadLibrary([path.join(root, 'pets'), path.join(app.isPackaged ? path.dirname(app.getPath('exe')) : root, 'pets'), paths().pets], pet);
-  if (!library.entries.has(petId(voicePet))) library.entries.set(petId(voicePet), { id: petId(voicePet), pet: voicePet });
-  for (const [id] of library.entries) {
-    const update = bundledUpdate(id);
-    if (update && id !== petId(pet)) library.entries.delete(id);
+  if (!libraryLoad) {
+    const bundled = path.join(root, 'pets');
+    const external = path.join(app.isPackaged ? path.dirname(app.getPath('exe')) : root, 'pets');
+    libraryLoad = loadLibrary([bundled, external, paths().pets], pet, {
+      cache: libraryFiles, immutableDirectory: app.isPackaged ? bundled : undefined
+    }).then(result => {
+      for (const candidate of [pet, voicePet]) {
+        const id = petId(candidate);
+        if (!result.entries.has(id)) result.entries.set(id, { id, pet: candidate });
+      }
+      for (const [id, entry] of result.entries) {
+        petIds.set(entry.pet, id);
+        if (bundledUpdate(id) && id !== petId(pet)) result.entries.delete(id);
+        else result.entries.set(id, { id, pet: entry.pet });
+      }
+      library = result;
+    }).finally(() => { libraryLoad = null; });
   }
-  for (const entry of library.entries.values()) {
-    entry.motion = new Motion();
-    entry.motion.setAnimation(entry.pet.animation);
-    entry.motion.setBehavior(entry.pet.behavior);
-    entry.settings = { ...DEFAULTS, mode: 'free', size: 180, speed: 45, presenceEnabled: false, paused: false, booInterval: 10 };
-    if (entry.pet.kind === 'voice') Object.assign(entry.settings, { mode: 'still', booEnabled: false });
-    entry.motion.advance(0, entry.settings);
-    if (entry.motion.behavior.cycle && !entry.motion.behavior.cycle.reverseAfterRest) entry.motion.cycleTime = 15.01;
-    else if (entry.motion.behavior.cycle?.reverseAfterRest) entry.settings.speed = 18;
-    else entry.motion.booIn = 3;
-    entry.lastTime = performance.now();
-  }
+  return libraryLoad;
+}
+
+function initializePreview(entry, now) {
+  entry.motion = new Motion();
+  entry.motion.setAnimation(entry.pet.animation);
+  entry.motion.setBehavior(entry.pet.behavior);
+  entry.settings = { ...DEFAULTS, mode: 'free', size: 180, speed: 45, presenceEnabled: false, paused: false, booInterval: 10 };
+  if (entry.pet.kind === 'voice') Object.assign(entry.settings, { mode: 'still', booEnabled: false });
+  entry.motion.advance(0, entry.settings);
+  if (entry.motion.behavior.cycle && !entry.motion.behavior.cycle.reverseAfterRest) entry.motion.cycleTime = 15.01;
+  else if (entry.motion.behavior.cycle?.reverseAfterRest) entry.settings.speed = 18;
+  else entry.motion.booIn = 3;
+  entry.lastTime = now;
 }
 
 function getLibraryFrame(id) {
   const entry = library.entries.get(id);
   if (!entry) return null;
   const now = performance.now();
+  if (!entry.motion) initializePreview(entry, now);
   entry.motion.advance(Math.min(.1, (now - entry.lastTime) / 1000), entry.settings);
   entry.lastTime = now;
   const frame = entry.motion.frame(entry.settings);
@@ -477,22 +531,38 @@ function installIpc() {
   });
   handle('state', snapshot);
   handle('countdown', (action, patch) => {
-    if (action === 'configure') { countdown.configure(patch); applyDesktop(); scheduleSave(); }
-    else if (action === 'start') countdown.start();
-    else if (action === 'stop') countdown.stop();
-    else if (action === 'position' && !countdown.frame().active) countdown.togglePosition();
-    else throw new Error('Acción de temporizador no válida.');
-    notify(); return snapshot();
+    controlCountdown(action, patch);
+    return snapshot();
   });
+  handle('tablet', (action, value) => {
+    if (action === 'composition' && typeof value === 'boolean') {
+      tabletCompositionEnabled = value;
+      tablet.syncComposition();
+      scheduleSave();
+      notify();
+      return;
+    }
+    if (action === 'scene') return tablet.selectScene(value);
+    if (!['start', 'stop', 'show'].includes(action)) throw new Error('Acción de tablet no válida.');
+    return tablet[action]();
+  });
+  handle('scene-shortcut', (scene, value) => {
+    const error = sceneShortcuts.change(scene, value);
+    if (error) return { error };
+    scheduleSave();
+    notify();
+    return { binding: sceneShortcuts.snapshot()[scene] };
+  });
+  handle('scene-shortcut-recording', recording => { sceneShortcutRecording = recording === true; });
   handle('canvas', changeCanvasFormat);
   handle('edit-type', type => {
     if (!['voice', 'companion'].includes(type)) throw new Error('Tipo de mascota no válido.');
     activeType = type; scheduleSave(); notify(); return snapshot();
   });
-  handle('open-pets', () => { refreshLibrary(); panel.loadURL(`${server.url}/pets`); return true; });
+  handle('open-pets', () => { panel.loadURL(`${server.url}/pets`); return true; });
   handle('open-panel', () => { panel.loadURL(`${server.url}/panel`); return true; });
-  handle('pet-library', () => {
-    refreshLibrary();
+  handle('pet-library', async () => {
+    await refreshLibrary();
     return { pets: [...library.entries.values()].filter(entry => (entry.pet.kind || 'companion') === activeType).map(entry => ({ id: entry.id, name: entry.pet.name, kind: entry.pet.kind || 'companion' })), activeType, activePetId: petId(currentPet()), unavailable: library.unavailable };
   });
   handle('select-pet', id => {
@@ -548,21 +618,26 @@ async function start() {
   loadPreferences();
   if (smoke) voiceSettings.micEnabled = false;
   motion.advance(0, settings);
-  server = await startServer({ preferredPort: smoke ? 0 : 18747, webRoot, getFrame, getVoiceFrame, getLibraryFrame, getLibraryFrames: () => Object.fromEntries([...library.entries.keys()].map(id => [id, getLibraryFrame(id)])), getAsset: (kind, id, slot) => (id ? library.entries.get(id)?.pet : slot === 'voice' ? voicePet : pet)?.images[kind || 'open'] || null, onClients: () => {
+  server = await startServer({ preferredPort: smoke ? 0 : 18747, webRoot, getFrame, getVoiceFrame, getLibraryFrame, getAsset: (kind, id, slot) => (id ? library.entries.get(id)?.pet : slot === 'voice' ? voicePet : pet)?.images[kind || 'open'] || null, onClients: () => {
     if (panel && !panel.isDestroyed()) panel.webContents.send('aula:changed', snapshot());
-  } });
+  }, getLibraryFrames: ids => Object.fromEntries((ids || [...library.entries.keys()]).filter(id => library.entries.has(id)).map(id => [id, getLibraryFrame(id)])) });
   createDesktop();
+  const { size, scaleFactor } = screen.getPrimaryDisplay();
+  const widePanel = !smoke && scaleFactor === 1 && size.width >= 2500 && size.height >= 1400;
   panel = new BrowserWindow({
-    width: 1080, height: 880, minWidth: 720, minHeight: 600, show: false,
-    title: 'Aula Fantasma', backgroundColor: '#f6f4f8', autoHideMenuBar: true,
+    width: widePanel ? 2120 : 1080, height: widePanel ? 1220 : 880, minWidth: 720, minHeight: 600, show: false,
+    title: 'Aula Fantasma', backgroundColor: '#2a1c2e', autoHideMenuBar: true,
     icon: path.join(root, 'assets', 'app-icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, backgroundThrottling: !smoke, offscreen: smoke }
   });
   secureWindow(panel);
+  const tabletRuntime = path.join(app.isPackaged ? process.resourcesPath : path.join(root, 'resources'), 'tablet');
+  tablet = createTabletPresentation({ root, runtime: tabletRuntime, url: `${server.url}/tablet`, compositionEnabled: () => tabletCompositionEnabled, secureWindow, changed: notify, smoke });
   const allowMicrophone = (contents, permission, details) => contents === microphoneWindow?.webContents && microphoneConfig().enabled && permission === 'media' && details?.isMainFrame === true && details.requestingUrl === `${server.url}/microphone`;
   panel.webContents.session.setPermissionRequestHandler((contents, permission, callback, details) => callback(allowMicrophone(contents, permission, details) && details.mediaTypes?.length === 1 && details.mediaTypes[0] === 'audio'));
   panel.webContents.session.setPermissionCheckHandler((contents, permission, _origin, details) => allowMicrophone(contents, permission, details) && details.mediaType === 'audio');
   panel.on('close', event => { if (!quitting && tray) { event.preventDefault(); panel.hide(); } });
+  panel.webContents.on('did-navigate', () => { sceneShortcutRecording = false; });
   panel.once('ready-to-show', () => { if (!smoke) panel.show(); });
   installIpc();
   microphoneWindow = new BrowserWindow({ width: 1, height: 1, show: false, skipTaskbar: true,
@@ -575,13 +650,9 @@ async function start() {
   tray.setToolTip('Aula Fantasma · mascota de escritorio y OBS');
   tray.on('double-click', showPanel); tray.on('click', showPanel);
   updateTray();
-  if (!smoke) {
-    globalShortcut.register('CommandOrControl+Alt+P', () => changeSettings({ paused: !settings.paused }, 'companion'));
-    globalShortcut.register('CommandOrControl+Alt+H', () => {
-      const enable = !(settings.desktopEnabled || settings.obsEnabled);
-      changeSettings({ desktopEnabled: enable, obsEnabled: enable });
-    });
-  }
+  if (!smoke) globalShortcut.register(COUNTDOWN_SHORTCUT, () => {
+    if (!forwardShortcutToRecorder(normalizeShortcut(COUNTDOWN_SHORTCUT))) controlCountdown('start');
+  });
   let previous = performance.now();
   timer = setInterval(() => {
     const now = performance.now();
@@ -597,8 +668,17 @@ async function start() {
   app.on('activate', showPanel);
   notify();
   console.log(`OBS_URL=${server.url}/overlay`);
+  if (!smoke) refreshLibrary().catch(() => { /* El selector reintenta al abrirlo. */ });
   if (smoke) {
-    if (process.argv.includes('--smoke-countdown')) {
+    if (process.argv.includes('--smoke-tablet')) {
+      const checks = await require('./tablet-smoke.cjs')({ panel, BrowserWindow, tablet, server, countdown, notify, secureWindow, savePreferences, loadPreferences });
+      console.log('TABLET_SMOKE_RESULT=' + JSON.stringify({ checks, rendererErrors }));
+      app.exit(Object.values(checks).every(Boolean) && rendererErrors.length === 0 ? 0 : 1);
+    } else if (process.argv.includes('--smoke-wide')) {
+      const checks = await require('./wide-smoke.cjs')({ panel, smokeRoot });
+      console.log('WIDE_SMOKE_RESULT=' + JSON.stringify({ checks, rendererErrors }));
+      app.exit(rendererErrors.length ? 1 : 0);
+    } else if (process.argv.includes('--smoke-countdown')) {
       const checks = await require('./countdown-smoke.cjs')({ BrowserWindow, root, smokeRoot, panel, desktop, countdown, notify, server, secureWindow, savePreferences, loadPreferences });
       fs.writeFileSync(path.join(smokeRoot, 'countdown-result.json'), JSON.stringify({ checks, rendererErrors }, null, 2));
       console.log('COUNTDOWN_SMOKE_RESULT=' + JSON.stringify({ checks, rendererErrors }));
@@ -1201,8 +1281,47 @@ async function runSelectorSmoke() {
   await waitPanel(`!document.getElementById('choose-companion').hidden && !document.getElementById('pet-settings').hidden`);
   await js('window.scrollTo(0, 0); true');
   await savePanel('panel-controls.png');
+  const shortcutButtonVisible = `(() => {
+    const button = document.getElementById('open-scene-shortcuts');
+    const rect = button.getBoundingClientRect();
+    return rect.top >= 0 && rect.bottom <= innerHeight && document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2) === button;
+  })()`;
+  const shortcutsVisible = await js(shortcutButtonVisible);
+  const shortcutsOpen = await js(`(() => {
+    const button = document.getElementById('open-scene-shortcuts');
+    button.focus(); button.click();
+    const dialog = document.getElementById('scene-shortcuts');
+    return dialog.matches(':modal') && dialog.querySelectorAll('form').length === 4 && document.activeElement.id === 'shortcut-inicio';
+  })()`);
+  if (shortcutsOpen) await savePanel('panel-scene-shortcuts.png');
+  panel.webContents.focus();
+  const pressShortcut = (keyCode, modifiers) => {
+    panel.webContents.sendInputEvent({ type: 'keyDown', keyCode, modifiers });
+    panel.webContents.sendInputEvent({ type: 'keyUp', keyCode, modifiers });
+  };
+  const verifyCapturedShortcut = (expected, needsNumpad) => js(`(async () => {
+    const expected = ${JSON.stringify(expected)};
+    const previous = (await window.aula.getState()).tablet.shortcuts.inicio.shortcut;
+    try {
+      const { binding } = await window.aula.sceneShortcut('inicio', document.getElementById('shortcut-inicio').value);
+      return binding?.active === true && binding.shortcut === expected && (!${needsNumpad} || binding.numpadActive);
+    } finally {
+      if (previous !== expected) await window.aula.sceneShortcut('inicio', previous);
+    }
+  })()`);
+  pressShortcut('1', ['control', 'alt']);
+  const shortcutCapturesCtrlAlt = await waitPanel(`document.getElementById('shortcut-inicio').value === 'Ctrl+Alt+1'`);
+  const digitShortcutRegistersBoth = shortcutCapturesCtrlAlt && await verifyCapturedShortcut('Ctrl+Alt+1', true);
+  pressShortcut('A', ['shift']);
+  const shortcutCapturesShift = await waitPanel(`document.getElementById('shortcut-inicio').value === 'Shift+A'`);
+  const shiftShortcutRegisters = shortcutCapturesShift && await verifyCapturedShortcut('Shift+A', false);
+  const shortcutsClose = await js(`(() => {
+    document.getElementById('close-scene-shortcuts').click();
+    return !document.getElementById('scene-shortcuts').open && document.activeElement.id === 'open-scene-shortcuts';
+  })()`);
   panel.setContentSize(760, 620);
   const compactLayout = await waitPanel(`innerWidth >= 720 && innerWidth <= 820 && document.getElementById('inspector').getBoundingClientRect().top > document.querySelector('.layer-board').getBoundingClientRect().bottom && document.documentElement.scrollWidth <= innerWidth`);
+  const shortcutsVisibleInCompact = await js(shortcutButtonVisible);
   await js('document.getElementById("canvas-portrait").click(); true');
   const portraitPreview = await waitPanel(`(() => {
     const stage = document.getElementById('preview'), dimensions = stage.getBoundingClientRect();
@@ -1221,12 +1340,6 @@ async function runSelectorSmoke() {
     const frames = [...document.querySelectorAll('.pet-preview iframe')];
     return frames.length >= 3 && frames.every(frame => { const doc=frame.contentDocument, pet=doc?.getElementById('pet'); return doc?.documentElement?.dataset.connected==='true' && pet?.naturalWidth>0 && getComputedStyle(doc.getElementById('pet-anchor')).visibility==='visible'; });
   })()`);
-  const includedIds = ['EduGhost', 'EduScream', 'EduFrankenstein', 'EduPiramyd'].map(name => petId(parsePet(fs.readFileSync(path.join(root, 'pets', name + '.aulapet')))));
-  const rememberPreviews = `(() => [...document.querySelectorAll('.pet-choice')].filter(card => ${JSON.stringify(includedIds)}.includes(card.dataset.petId)).map(card => { const doc=card.querySelector('iframe').contentDocument; const canvas=doc.querySelector('#pet-body.flipbook-active #pet-flipbook, #pet-body.cloth-active #pet-cloth'); return canvas ? canvas.toDataURL() : doc.getElementById('pet-body').style.transform; }))()`;
-  const firstFrames = previewsLoaded ? await panel.webContents.executeJavaScript(rememberPreviews) : [];
-  await new Promise(resolve => setTimeout(resolve, 450));
-  const nextFrames = previewsLoaded ? await panel.webContents.executeJavaScript(rememberPreviews) : [];
-  const previewsAnimate = firstFrames.length >= 3 && firstFrames.every((image, index) => image !== nextFrames[index]);
   const selectionMarked = opensSelector && await panel.webContents.executeJavaScript(`document.querySelectorAll('.pet-choice.selected').length === 1 && document.querySelector('.pet-choice.selected').dataset.petId === ${JSON.stringify(activeBeforeBrowse)}`);
   const browseKeepsSettings = JSON.stringify(settings) === beforeBrowse && petId(pet) === activeBeforeBrowse;
   const independentPreviews = server.stats().obs <= 1;
@@ -1243,6 +1356,23 @@ async function runSelectorSmoke() {
     show('');
     return matches.length === 1 && matches[0] === 'EduScream' && noMatches && document.getElementById('library-empty').hidden;
   })()`);
+  const search = value => js(`(() => {
+    const input = document.getElementById('pet-search');
+    input.value = ${JSON.stringify(value)};
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  })()`);
+  await search('EduScream');
+  const filteredPreviewLoaded = await waitPanel(`(() => {
+    const frames = document.querySelectorAll('.pet-preview iframe');
+    return frames.length === 1 && frames[0].title === 'Animación de EduScream'
+      && Boolean(frames[0].contentDocument?.querySelector('#pet-body.flipbook-active #pet-flipbook'));
+  })()`);
+  const captureFrame = `document.querySelector('.pet-preview iframe')?.contentDocument?.getElementById('pet-flipbook')?.toDataURL()`;
+  const firstFrame = filteredPreviewLoaded && await js(captureFrame);
+  const previewsAnimate = firstFrame && await waitPanel(`${captureFrame} !== ${JSON.stringify(firstFrame)}`);
+  await search('sin-coincidencias');
+  const hiddenPreviewsReleased = await waitPanel(`!document.querySelector('.pet-preview iframe')`);
+  await search('');
   const invalidChoiceRejected = opensSelector && await panel.webContents.executeJavaScript(`window.aula.selectPet('../pets/EduGhost.aulapet').then(result => Boolean(result.error))`);
   const targetName = pet.name === 'EduScream' ? 'EduGhost' : 'EduScream';
   const targetId = petId(parsePet(fs.readFileSync(path.join(root, 'pets', targetName + '.aulapet'))));
@@ -1252,11 +1382,16 @@ async function runSelectorSmoke() {
   const catalogEntry = library.entries.get(petId(pet));
   const animationPreserved = selectsCharacter && JSON.stringify(pet.animation) === JSON.stringify(catalogEntry.pet.animation) && JSON.stringify(pet.behavior) === JSON.stringify(catalogEntry.pet.behavior);
   activatePet(initialPet, false); changeSettings(initialSettings);
-  return { columns, compactLayout, portraitPreview, lightPreview, thumbnailsLoaded, voiceInspector, outputsInspector, independentToggle, searchWorks, opensSelector, libraryNames, previewsLoaded, previewsAnimate, selectionMarked, browseKeepsSettings, independentPreviews, invalidChoiceRejected, returnsToPanel, selectsCharacter, animationPreserved };
+  return { columns, compactLayout, shortcutsVisible, shortcutsOpen, shortcutsClose, shortcutsVisibleInCompact, shortcutCapturesCtrlAlt, digitShortcutRegistersBoth, shortcutCapturesShift, shiftShortcutRegisters, portraitPreview, lightPreview, thumbnailsLoaded, voiceInspector, outputsInspector, independentToggle, searchWorks, opensSelector, libraryNames, previewsLoaded, filteredPreviewLoaded, previewsAnimate, hiddenPreviewsReleased, selectionMarked, browseKeepsSettings, independentPreviews, invalidChoiceRejected, returnsToPanel, selectsCharacter, animationPreserved };
 }
 
-app.on('before-quit', () => {
+app.on('before-quit', event => {
   if (!gotLock) return;
+  if (tablet?.isRunning()) {
+    event.preventDefault();
+    if (!quitting) { quitting = true; tablet.stop().finally(() => app.quit()); }
+    return;
+  }
   quitting = true;
   clearInterval(timer); clearTimeout(settingsTimer);
   globalShortcut.unregisterAll();
