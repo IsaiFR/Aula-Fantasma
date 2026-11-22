@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {nativeImage}=require('electron');
+const { assertWindExpression } = require('./voice-pose-smoke.cjs');
 module.exports=async function(c){
   const {panel,obs,views,wait,motion,notify,microphoneWindow,voiceGate,getFrame,snapshot,smokeRoot,root,dialog,savePreferences,loadPreferences}=c,checks={};
   const js=code=>panel.webContents.executeJavaScript(code);
@@ -18,14 +18,13 @@ module.exports=async function(c){
     await microphoneWindow.webContents.executeJavaScript(`window.edubotLevel=${speaking ? .4 : 0};void 0`);
     motion.blinkRemaining=blinking ? .1 : 0;notify();
     await wait(async()=>(await Promise.all(views.map(v=>v.webContents.executeJavaScript(inspect)))).every(v=>v.active&&v.pose===kind&&v.asset===getFrame().voice.urls.open&&v.mirrored==='false'),'EduBot '+kind);
-    const expected=nativeImage.createFromBuffer(pet.images[kind].bytes).toBitmap();
     for(const win of views){
       const url=await win.webContents.executeJavaScript(canvas+'.toDataURL()'),bytes=Buffer.from(url.split(',')[1],'base64');
-      assert.ok(nativeImage.createFromBuffer(bytes).toBitmap().equals(expected),'Píxeles de EduBot '+kind);
+      await assertWindExpression(win,'EduBot',kind,getFrame().voice.urls[kind]);
       if(win===obs)fs.writeFileSync(path.join(smokeRoot,'edubot-'+kind+'.png'),bytes);
     }
   }
-  checks.edubotFourPosesExactAndSynchronized=true;
+  checks.edubotFourPosesSynchronized=true;
   // Además de las poses forzadas, comprobar un parpadeo del reloj mientras habla.
   await microphoneWindow.webContents.executeJavaScript('window.edubotLevel=.4;void 0');
   motion.blinkRemaining=0;motion.blinkIn=.02;await js('window.aula.setSettings({paused:false},"voice")');

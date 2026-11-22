@@ -1,6 +1,6 @@
 # EduNolan
 
-`pets/EduNolan-Voz.pet` contiene cuatro poses transparentes de 1254 × 1254 píxeles. Los lentes claros dejan ver los ojos y sus párpados, con reflejos tenues. La boca se abre bajo el bigote al detectar audio.
+`pets/EduNolan-Voz.pet` contiene cuatro poses transparentes de 1254 × 1254 píxeles. Los lentes claros dejan ver los ojos y sus párpados, con reflejos tenues. La boca se abre bajo el bigote al detectar audio. El viento continuo mueve el fleco y la capa con el perfil v13 de `animation.cloth.motionRegions`, incluso con el micrófono apagado.
 
 El original y las ediciones de imagegen integrado están en `web/edunolan`. `node scripts/create-edunolan.cjs` aplica las expresiones y la transparencia visual de los lentes al dibujo base. El canal alfa y el contorno exterior se conservan.
 

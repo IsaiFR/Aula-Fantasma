@@ -1,4 +1,4 @@
-# Mascotas de voz .pet: v6 a v10
+# Formato de mascotas .pet
 
 En Aula Fantasma 1.10.0 se añade v7 para voces con sábana animada. EduGhost usa las cuatro poses PNG originales, `animation.float` y `animation.cloth` con regiones protegidas de cara y patas. El renderer compone primero la pose, deforma la tela con interpolación de alfa premultiplicado a la resolución visible y finalmente aplica el espejo. El reloj compartido mantiene la animación sincronizada con voz y parpadeo. Solo se migra el hash exacto del antiguo EduGhost incluido; las variantes personalizadas se conservan.
 
@@ -74,3 +74,27 @@ El formato v11 usa `kind: "companion"`, `images.open` y `images.atlas` (PNG auto
 `vehicle` declara `wheelRadius` (radio de rodadura relativo al tamaño), `turnRate` (radianes por segundo), y `views.left/right`. Cada vista contiene un `crop` normalizado del atlas y de dos a cuatro `wheels`: centro `cx/cy`, radios `rx/ry` y un rectángulo `clip` opcional para la zona visible. Se rechazan números no finitos, ruedas externas, claves desconocidas y mezclas de motores. No admite scripts ni rutas.
 
 El reloj central publica `vehicle.heading`, `wheelAngle`, `steering` y `moving`. El renderer rota las texturas elípticas de las ruedas y cambia entre las vistas dibujadas, aplicando perspectiva e inclinación progresivas. Pausa congela el vehículo completo; esquina detiene ruedas y recorrido. Véase `docs/eduf1-generation.md`.
+
+## EduHomelander y el viento localizado (v13)
+
+El paquete de voz conserva las cuatro poses PNG y añade `animation.cloth.motionRegions`. Cada región declara un polígono `points` en coordenadas normalizadas, una distancia `feather` de atenuación hacia el interior y una intensidad `strength`. El perfil admite de 1 a 8 polígonos y de 3 a 24 puntos por polígono. En este modo, los polígonos marcan dónde actúan las ondas de `cloth`.
+
+EduHomelander usa una región por faldón y una más suave para el fleco. Las ondas siguen el reloj de voz mientras la mascota está visible, incluso con el micrófono apagado. El mismo perfil se aplica a todas las poses y se conserva al exportar. Si la selección guardada coincide con el paquete original incluido, se actualiza al abrir la app.
+
+`node scripts/animate-voice-capes.cjs` aplica los contornos de las capas de EduBot, EduDracula, EduLuchador, EduMoon, EduStarlight, EduStrange y EduWitch sobre sus paquetes existentes. Conserva los PNG, el parpadeo, la voz y los efectos del paquete.
+
+`node scripts/animate-voice-hair.cjs` aplica el viento al cabello de EduAlloy, EduCage, EduConquest, EduDeep, EduEve, EduJames, EduLeon, EduMark y EduSoldier. La ondulación es continua y las raíces quedan fijas. `npm.cmd run smoke -- --packaged --hair` verifica movimiento y poses de voz con audio simulado en Electron.
+
+## EduDracula con capa y murciélago (v14)
+
+El formato v14 combina el viento localizado con `effects.draculaBat` y sus cuatro poses de murciélago. La capa se dibuja en la forma original y en su parte visible durante la transición. En la forma de murciélago se conservan el aleteo, el humo y las expresiones del v10.
+
+La prueba `npm.cmd run smoke -- --packaged --capes` comprueba las siete capas y el ciclo de EduDracula con audio simulado en Electron.
+
+## Acciones periódicas de voz (v15)
+
+`effects.voiceCycle` declara una `action` y sus tiempos `idleSeconds` y `activeSeconds`. Las acciones actuales son `scan`, `freeze`, `flame`, `melt`, `helmet` y `agent`. Los paquetes incluidos esperan 20 segundos en reposo y realizan la acción durante 5,5 a 7 segundos. Al seleccionar la mascota, cambiar de lienzo o restablecer la posición, vuelve a contar la espera. El importador reconoce la acción retirada `parasites` en paquetes anteriores y la deja en reposo.
+
+EduStrading pliega y despliega las cuatro aletas de su sensor durante la alerta. La luz del sensor se intensifica al desplegarse y el bebé sigue reaccionando desde la cápsula.
+
+Las acciones se sincronizan en escritorio, panel y salida de navegador para OBS. Funcionan con el micrófono apagado y conservan los PNG de las poses de voz. EduZero mantiene su bruma y fija la pose durante la congelación. EduFast usa el casco de su propia ilustración, que vuelve al suelo al terminar. `npm.cmd run smoke -- --packaged --voice-cycles` verifica cada acción y su regreso a reposo en el portable.

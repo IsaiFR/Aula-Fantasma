@@ -1,8 +1,9 @@
 'use strict';
 const crypto = require('node:crypto');
+const { ACTIONS } = require('./voice-cycle.cjs');
 const { behaviorProfile } = require('./behavior.cjs');
 const FORMAT = 'aula-fantasma-pet';
-const VERSION = 12;
+const VERSION = 15;
 const MAX_FILE = 32 * 1024 * 1024;
 const MAX_IMAGE = 20 * 1024 * 1024;
 const FLOAT = { enabled: true, amplitude: 10, frequency: 2.1, tiltAmplitude: 1.8, tiltFrequency: 1.25, stretchAmplitude: 0.008, stretchPhase: 0.4 };
@@ -33,12 +34,25 @@ function regions(value, label) {
     return { cx: number(region.cx, 0, 1, label), cy: number(region.cy, 0, 1, label), rx: number(region.rx, 0.001, 1, label), ry: number(region.ry, 0.001, 1, label) };
   });
 }
+function clothMotionRegions(value) {
+  const label = 'cloth.motionRegions';
+  if (!Array.isArray(value) || value.length < 1 || value.length > 8) fail(`${label}: se admiten de 1 a 8 regiones.`);
+  return value.map(region => {
+    keys(region, ['points', 'feather', 'strength'], label);
+    if (!Array.isArray(region.points) || region.points.length < 3 || region.points.length > 24) fail(`${label}: cada polígono necesita de 3 a 24 puntos.`);
+    const points = region.points.map(point => {
+      if (!Array.isArray(point) || point.length !== 2) fail(`${label}: cada punto necesita dos coordenadas.`);
+      return point.map(coordinate => number(coordinate, 0, 1, label));
+    });
+    return { points, feather: number(region.feather, .001, .25, label), strength: number(region.strength, .01, 1, label) };
+  });
+}
 function animationProfile(input = {}) {
   keys(input, ['float', 'cloth', 'blink'], 'Animación');
   const result = {};
   for (const [section, defaults] of Object.entries({ float: FLOAT, cloth: CLOTH, blink: BLINK })) {
     const source = input[section] ?? {};
-    keys(source, Object.keys(defaults), section);
+    keys(source, section === 'cloth' ? [...Object.keys(defaults), 'motionRegions'] : Object.keys(defaults), section);
     const value = { ...defaults, ...source };
     if (typeof value.enabled !== 'boolean') fail(`${section}: enabled debe ser booleano.`);
     result[section] = value;
@@ -52,6 +66,7 @@ function animationProfile(input = {}) {
   for (const key of ['frequencyY', 'frequencyX2', 'frequencyY2', 'frequencyX', 'frequencyY3']) number(c[key], 0, 50, `cloth.${key}`);
   for (const key of ['speedX', 'speedX2', 'speedY']) number(c[key], 0, 10, `cloth.${key}`);
   c.protectedRegions = regions(c.protectedRegions, 'cloth.protectedRegions');
+  if (Object.hasOwn(c, 'motionRegions')) c.motionRegions = clothMotionRegions(c.motionRegions);
   if (c.tail !== null) {
     keys(c.tail, ['startX', 'endX', 'startY', 'endY'], 'cloth.tail');
     c.tail = { ...c.tail };
@@ -82,18 +97,24 @@ function parsePet(data) {
   let manifest;
   try { manifest = JSON.parse(data.toString()); } catch { fail('No se pudo leer el archivo de mascota.'); }
   if (manifest?.format !== FORMAT || !Number.isInteger(manifest.version) || manifest.version < 1 || manifest.version > VERSION) fail('El formato o la versión de esta mascota no es compatible.');
-  const hasMist = manifest.version === 12;
-  const isVoice = (manifest.version >= 6 && manifest.version <= 10) || hasMist;
+  const hasVoiceCycle = manifest.version === 15;
+  const hasMist = manifest.version === 12 || (hasVoiceCycle && manifest.images?.mist !== undefined);
+  const hasWindAndBat = manifest.version === 14;
+  const hasLocalizedWind = manifest.version === 13 || hasWindAndBat;
+  const hasBatPoses = manifest.version === 10 || hasWindAndBat;
+  const allowsEffects = (manifest.version >= 8 && manifest.version <= 10) || hasWindAndBat || hasVoiceCycle;
+  const isVoice = (manifest.version >= 6 && manifest.version <= 10) || hasMist || hasLocalizedWind || hasVoiceCycle;
   if ((isVoice && manifest.kind !== 'voice') || (manifest.version === 11 && manifest.kind !== 'companion')) fail('El tipo de mascota no coincide con su versión.');
-  keys(manifest, manifest.version === 1 ? ['format', 'version', 'name', 'images', 'animation'] : ['format', 'version', 'name', 'images', 'animation', 'behavior', ...(manifest.version >= 6 ? ['kind'] : []), ...(isVoice && manifest.version >= 8 && !hasMist ? ['effects'] : [])], 'Mascota');
+  keys(manifest, manifest.version === 1 ? ['format', 'version', 'name', 'images', 'animation'] : ['format', 'version', 'name', 'images', 'animation', 'behavior', ...(manifest.version >= 6 ? ['kind'] : []), ...(allowsEffects ? ['effects'] : [])], 'Mascota');
   if (typeof manifest.name !== 'string' || !manifest.name.trim() || manifest.name.length > 80 || /[\x00-\x1f]/.test(manifest.name)) fail('La mascota necesita un nombre válido de hasta 80 caracteres.');
-  keys(manifest.images, manifest.version === 11 ? ['open', 'atlas'] : isVoice ? ['open', 'closed', 'talking', 'talkingClosed', ...(hasMist ? ['mist'] : manifest.version === 10 ? ['bat', 'batOpen', 'batClosed', 'batTalkingClosed'] : manifest.version === 9 ? ['bat'] : [])] : manifest.version === 1 ? ['open', 'closed'] : manifest.version === 2 ? ['open', 'closed', 'atlas'] : manifest.version === 3 ? ['open', 'closed', 'atlas', 'limb'] : manifest.version === 4 ? ['open', 'closed', 'atlas', 'limb', 'walk', 'greeting', 'frames'] : ['open', 'closed', 'atlas', 'limb', 'walk', 'greeting', 'frames', 'cycle'], 'Imágenes');
+  keys(manifest.images, manifest.version === 11 ? ['open', 'atlas'] : isVoice ? ['open', 'closed', 'talking', 'talkingClosed', ...(hasMist ? ['mist'] : hasBatPoses ? ['bat', 'batOpen', 'batClosed', 'batTalkingClosed'] : manifest.version === 9 ? ['bat'] : [])] : manifest.version === 1 ? ['open', 'closed'] : manifest.version === 2 ? ['open', 'closed', 'atlas'] : manifest.version === 3 ? ['open', 'closed', 'atlas', 'limb'] : manifest.version === 4 ? ['open', 'closed', 'atlas', 'limb', 'walk', 'greeting', 'frames'] : ['open', 'closed', 'atlas', 'limb', 'walk', 'greeting', 'frames', 'cycle'], 'Imágenes');
   const images = { open: image(manifest.images.open) };
   if (manifest.images.closed !== undefined) images.closed = image(manifest.images.closed);
   if (manifest.images.atlas !== undefined) images.atlas = image(manifest.images.atlas);
   if (manifest.images.limb !== undefined) images.limb = image(manifest.images.limb);
   for (const kind of ['walk', 'greeting', 'frames', 'cycle', 'talking', 'talkingClosed', 'bat', 'batOpen', 'batClosed', 'batTalkingClosed']) if (manifest.images[kind] !== undefined) images[kind] = image(manifest.images[kind]);
   const animation = animationProfile(manifest.animation);
+  if (Boolean(animation.cloth.motionRegions) !== hasLocalizedWind) fail('Las regiones de viento necesitan formato v13 o v14.');
   if (hasMist) {
     images.mist = image(manifest.images.mist);
     if (animation.cloth.enabled || Object.values(images).some(resource => resource.mime !== 'image/png')) fail('La bruma necesita poses y capa PNG sin ondulación de sábana.');
@@ -102,7 +123,7 @@ function parsePet(data) {
   if (animation.cloth.enabled && images.open.mime === 'image/gif') fail('La ondulación necesita una imagen PNG o WebP estática.');
   const result = { name: manifest.name.trim(), images, animation };
   if (manifest.effects !== undefined) {
-    keys(manifest.effects, ['ghostOpacity', ...(manifest.version >= 9 ? ['draculaBat'] : [])], 'Efectos');
+    keys(manifest.effects, hasVoiceCycle ? ['voiceCycle'] : ['ghostOpacity', ...(manifest.version >= 9 ? ['draculaBat'] : [])], 'Efectos');
     result.effects = {};
     if (manifest.effects.ghostOpacity !== undefined) {
       keys(manifest.effects.ghostOpacity, ['fadeSeconds'], 'ghostOpacity');
@@ -119,15 +140,29 @@ function parsePet(data) {
         wingRootY: number(bat.wingRootY, .2, .8, 'draculaBat.wingRootY')
       };
     }
+    if (manifest.effects.voiceCycle !== undefined) {
+      const cycle = manifest.effects.voiceCycle;
+      keys(cycle, ['action', 'idleSeconds', 'activeSeconds'], 'voiceCycle');
+      if (!ACTIONS.includes(cycle.action)) fail('La acción de voz no se reconoce.');
+      result.effects.voiceCycle = {
+        action: cycle.action,
+        idleSeconds: number(cycle.idleSeconds, 5, 600, 'voiceCycle.idleSeconds'),
+        activeSeconds: number(cycle.activeSeconds, 2, 20, 'voiceCycle.activeSeconds')
+      };
+    }
     if (!Object.keys(result.effects).length) fail('Efectos: declara al menos un efecto.');
   }
   if (images.bat && !result.effects?.draculaBat) fail('La imagen bat necesita el efecto draculaBat.');
-  if (['batOpen', 'batClosed', 'batTalkingClosed'].some(kind => images[kind]) || manifest.version >= 10 && result.effects?.draculaBat) {
+  if (hasVoiceCycle && !result.effects?.voiceCycle) fail('El formato v15 necesita un ciclo de voz.');
+  if (hasWindAndBat && !result.effects?.draculaBat) fail('El formato v14 requiere la transformación en murciélago.');
+  if (['batOpen', 'batClosed', 'batTalkingClosed'].some(kind => images[kind]) || hasBatPoses && result.effects?.draculaBat) {
     if (!result.effects?.draculaBat || ['batOpen', 'batClosed', 'batTalkingClosed'].some(kind => images[kind]?.mime !== 'image/png')) fail('El murciélago de voz necesita sus cuatro poses PNG.');
   }
   if (isVoice) {
     if (!images.talking) fail('Una mascota de voz necesita la imagen hablando.');
     if (animation.blink.enabled && (!images.closed || !images.talkingClosed)) fail('El parpadeo de voz necesita ojos cerrados en silencio y hablando.');
+    if (hasVoiceCycle && ['open', 'closed', 'talking', 'talkingClosed'].some(kind => images[kind]?.mime !== 'image/png')) fail('El ciclo de voz necesita cuatro poses PNG.');
+    if (hasLocalizedWind && (!animation.cloth.enabled || ['open', 'closed', 'talking', 'talkingClosed'].some(kind => images[kind]?.mime !== 'image/png'))) fail('El viento localizado necesita ondulación activa y las cuatro poses PNG.');
     if (animation.blink.regions.length) fail('Las mascotas de voz usan imágenes completas sin máscara de ojos.');
     if (animation.cloth.enabled && (manifest.version < 7 || Object.values(images).some(resource => resource.mime !== 'image/png'))) fail('La sábana de voz necesita formato v7 y poses PNG.');
     result.kind = 'voice';
@@ -157,7 +192,7 @@ function parsePet(data) {
 }
 function serializePet(pet) {
   const images = Object.fromEntries(Object.entries(pet.images).map(([key, value]) => [key, { mime: value.mime, dataBase64: value.bytes.toString('base64') }]));
-  const voiceVersion = pet.images.mist ? 12 : pet.effects?.draculaBat ? (pet.images.batOpen ? 10 : 9) : pet.effects ? 8 : pet.animation.cloth.enabled ? 7 : 6;
+  const voiceVersion = pet.effects?.voiceCycle ? 15 : pet.animation.cloth.motionRegions ? (pet.effects?.draculaBat ? 14 : 13) : pet.images.mist ? 12 : pet.effects?.draculaBat ? (pet.images.batOpen ? 10 : 9) : pet.effects ? 8 : pet.animation.cloth.enabled ? 7 : 6;
   const bytes = Buffer.from(JSON.stringify({ format: FORMAT, version: pet.kind === 'voice' ? voiceVersion : pet.behavior ? (pet.behavior.vehicle ? 11 : pet.behavior.cycle ? 5 : pet.behavior.flipbook ? 4 : pet.images.limb ? 3 : 2) : 1, ...(pet.kind === 'voice' ? { kind: 'voice' } : pet.behavior?.vehicle ? { kind: 'companion' } : {}), name: pet.name, images, animation: pet.animation, ...(pet.behavior ? { behavior: pet.behavior } : {}), ...(pet.effects ? { effects: pet.effects } : {}) }, null, 2) + '\n');
   parsePet(bytes); // Exportar solamente archivos que se puedan volver a cargar.
   return bytes;

@@ -1,7 +1,8 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const {createCanvas,loadImage}=require(process.env.AULA_CANVAS_MODULE||path.join(os.homedir(),'.cache','codex-runtimes','codex-primary-runtime','dependencies','node','node_modules','@napi-rs','canvas'));
-const {serializePet,animationProfile}=require('../src/pet-package.cjs');
+const {serializePet}=require('../src/pet-package.cjs');
+const { hairAnimation } = require('./animate-voice-hair.cjs');
 const {behaviorProfile}=require('../src/behavior.cjs');
 const root=path.join(__dirname,'..'),assets=path.join(root,'web','edualloy');
 // Regiones faciales en el lienzo original de 1254 px. El resto del personaje es idéntico.
@@ -31,7 +32,7 @@ const regions={eyes:[{x:570,y:326,width:176,height:149},{x:829,y:310,width:151,h
     }
     ctx.putImageData(frame,0,0);const bytes=c.toBuffer('image/png');fs.writeFileSync(path.join(assets,kind+'.png'),bytes);images[kind]={mime:'image/png',bytes};
   }
-  const animation=animationProfile({float:{enabled:false},cloth:{enabled:false},blink:{enabled:true,intervalMin:.75,intervalMax:4,duration:.15,closeDuration:.04,openDuration:.06,regions:[]}});
+  const animation=hairAnimation('EduAlloy', {float:{enabled:false},blink:{enabled:true,intervalMin:.75,intervalMax:4,duration:.15,closeDuration:.04,openDuration:.06,regions:[]}});
   const pet={name:'EduAlloy',kind:'voice',images,animation,behavior:behaviorProfile()};
   const bytes=serializePet(pet);fs.writeFileSync(path.join(root,'pets','EduAlloy-Voz.pet'),bytes);
   fs.writeFileSync(path.join(assets,'regions.json'),JSON.stringify(regions,null,2)+'\n');

@@ -16,6 +16,7 @@ const { VoiceGate } = require('./voice.cjs');
 const { canvasInfo, isCanvasFormat } = require('./canvas.cjs');
 const { ghostOpacityFrame } = require('./ghost-opacity.cjs');
 const { draculaBatFrame } = require('./dracula-bat.cjs');
+const { voiceCycleFrame } = require('./voice-cycle.cjs');
 const { Countdown, DEFAULT_COUNTDOWN } = require('./countdown.cjs');
 const { createTabletPresentation, SCENES } = require('./tablet-presentation.cjs');
 const { createSceneShortcuts, normalizeShortcut } = require('./scene-shortcuts.cjs');
@@ -74,6 +75,7 @@ let voicePet, voiceSelectedFile = null, voiceRevision = 0, activeType = 'compani
 const voiceMotion = new Motion();
 let ghostOpacityStart = 0;
 let draculaBatStart = 0;
+let voiceCycleStart = 0;
 let voiceSettings = { ...DEFAULTS, mode: 'still', size: 256, presenceEnabled: false, booEnabled: false };
 const GLOBAL_SETTINGS = ['desktopEnabled', 'obsEnabled', 'displayId', 'voiceEnabled', 'companionEnabled'];
 const currentPet = () => activeType === 'voice' ? voicePet : pet;
@@ -109,6 +111,7 @@ function activateVoicePet(candidate, persist = true) {
     fs.writeFileSync(`${target}.tmp`, serializePet(candidate)); fs.renameSync(`${target}.tmp`, target);
   }
   voicePet = candidate; voiceSelectedFile = file; voiceRevision++;
+  voiceCycleStart = voiceMotion.elapsed;
   ghostOpacityStart = voiceMotion.elapsed;
   draculaBatStart = voiceMotion.elapsed;
   canvasPetCache.set(petId(candidate), candidate);
@@ -287,6 +290,7 @@ function changeCanvasFormat(format) {
   selectedPetFile = nextPet.file; voiceSelectedFile = nextVoice.file;
   activeType = target.activeType === 'voice' ? 'voice' : 'companion';
   canvasFormat = format; canvasRevision++;
+  voiceCycleStart = voiceMotion.elapsed;
   ghostOpacityStart = voiceMotion.elapsed;
   draculaBatStart = voiceMotion.elapsed;
   motion.reset(); motion.advance(0, settings);
@@ -352,7 +356,8 @@ function getVoiceFrame() {
     canvas: { ...canvasInfo(canvasFormat), revision: canvasRevision },
     settings: { ...voiceSettings, voiceEnabled: settings.voiceEnabled, desktopEnabled: settings.desktopEnabled && settings.voiceEnabled, obsEnabled: settings.obsEnabled && settings.voiceEnabled },
     assetUrl: `/asset${suffix}`, closedAssetUrl: voicePet.images.closed ? `/asset-closed${suffix}` : null,
-    animation: voicePet.animation, behavior: voiceMotion.behavior, ghostOpacity: ghostOpacityFrame(voiceMotion.elapsed - ghostOpacityStart, voiceSettings, voicePet.effects), draculaBat: draculaBatFrame(voiceMotion.elapsed - draculaBatStart, voiceSettings, voicePet.effects), voice: { ...voiceFrame(voicePet, voiceMotion, suffix), mirrored: voiceSettings.corner.endsWith('right') }, timestamp: Date.now() };
+    animation: voicePet.animation, behavior: voiceMotion.behavior, ghostOpacity: ghostOpacityFrame(voiceMotion.elapsed - ghostOpacityStart, voiceSettings, voicePet.effects), draculaBat: draculaBatFrame(voiceMotion.elapsed - draculaBatStart, voiceSettings, voicePet.effects),
+    voiceCycle: voiceCycleFrame(voiceMotion.elapsed - voiceCycleStart, voicePet.effects?.voiceCycle), voice: { ...voiceFrame(voicePet, voiceMotion, suffix), mirrored: voiceSettings.corner.endsWith('right') }, timestamp: Date.now() };
 }
 
 function snapshot() {
@@ -508,6 +513,7 @@ function getLibraryFrame(id) {
   const assetRoutes = { assetUrl: ['open', 'asset'], closedAssetUrl: ['closed', 'asset-closed'], atlasUrl: ['atlas', 'asset-atlas'], limbUrl: ['limb', 'asset-limb'], walkGifUrl: ['walk', 'asset-walk'], greetingGifUrl: ['greeting', 'asset-greeting'], framesUrl: ['frames', 'asset-frames'], cycleGifUrl: ['cycle', 'asset-cycle'] };
   const urls = Object.fromEntries(Object.entries(assetRoutes).map(([key, [kind, route]]) => [key, entry.pet.images[kind] ? `/${route}?pet=${id}` : null]));
   return { ...frame, ...urls, voice: voiceFrame(entry.pet, entry.motion, `?pet=${id}`, true), ghostOpacity: ghostOpacityFrame(entry.motion.elapsed, entry.settings, entry.pet.effects), draculaBat: draculaBatFrame(entry.motion.elapsed, entry.settings, entry.pet.effects), settings: entry.settings, animation: entry.pet.animation, behavior: entry.motion.behavior,
+    voiceCycle: voiceCycleFrame(entry.motion.elapsed, entry.pet.effects?.voiceCycle),
     ...(entry.motion.behavior.flipbook ? { gifFrame: flipbookFrame(frame, entry.motion.behavior.flipbook) } : {}),
     ...(frame.cycle ? { gifFrame: { clip: 'cycle', index: frame.cycle.index, sheetIndex: frame.cycle.sheetIndex } } : {}) };
 }
@@ -576,7 +582,7 @@ function installIpc() {
     if (!['voice', 'companion'].includes(type)) throw new Error('Tipo de mascota no válido.');
     return changeSettings(patch, type);
   });
-  handle('reset-position', () => { if (activeType === 'voice') { voiceMotion.reset(); ghostOpacityStart = 0; draculaBatStart = 0; } else { motion.reset(); motion.advance(0, settings); } notify(); return snapshot(); });
+  handle('reset-position', () => { if (activeType === 'voice') { voiceMotion.reset(); ghostOpacityStart = 0; draculaBatStart = 0; voiceCycleStart = 0; } else { motion.reset(); motion.advance(0, settings); } notify(); return snapshot(); });
   handle('boo-now', () => { motion.booNow(settings); notify(); return snapshot(); });
   handle('copy-url', () => { clipboard.writeText(`${server.url}/overlay`); return true; });
   handle('guide', () => shell.openPath(path.join(app.isPackaged ? path.dirname(app.getPath('exe')) : root, 'GUIA-OBS.html')));

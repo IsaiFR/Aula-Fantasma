@@ -3,7 +3,8 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { createCanvas, loadImage, Path2D } = require(process.env.AULA_CANVAS_MODULE || path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'node', 'node_modules', '@napi-rs', 'canvas'));
-const { serializePet, animationProfile } = require('../src/pet-package.cjs');
+const { serializePet } = require('../src/pet-package.cjs');
+const { hairAnimation } = require('./animate-voice-hair.cjs');
 const { behaviorProfile } = require('../src/behavior.cjs');
 
 const root = path.join(__dirname, '..');
@@ -43,7 +44,7 @@ async function createPet() {
     images[name] = { mime, bytes: canvas.toBuffer(mime) };
   }
   for (const [name, resource] of Object.entries(images)) fs.writeFileSync(path.join(assets, name + '.png'), resource.bytes);
-  const animation = animationProfile({ float: { enabled: false }, blink: { enabled: true, intervalMin: .75, intervalMax: 4, duration: .15 } });
+  const animation = hairAnimation('EduConquest', { float: { enabled: false }, blink: { enabled: true, intervalMin: .75, intervalMax: 4, duration: .15 } });
   const pet = serializePet({ name: 'EduConquest', kind: 'voice', images, animation, behavior: behaviorProfile() });
   fs.writeFileSync(path.join(root, 'pets', 'EduConquest-Voz.pet'), pet);
   console.log(`EduConquest-Voz.pet · ${pet.length} bytes`);

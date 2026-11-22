@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const smokeVoicePose = require('./voice-pose-smoke.cjs');
 function mirrorBitmap(bytes, width) {
   const result = Buffer.alloc(bytes.length), height = bytes.length / (width * 4);
   for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) result.writeUInt32LE(bytes.readUInt32LE((y * width + x) * 4), (y * width + width - 1 - x) * 4);
@@ -48,6 +49,25 @@ module.exports = async function(c) {
   }
   checks.fourCorners = true;
   checks.noRedundantPetCard = await panel.webContents.executeJavaScript(`!document.querySelector('.pet-card') && !document.getElementById('import-image') && Boolean(document.getElementById('choose-voice') && document.getElementById('choose-companion') && document.getElementById('export-pet'))`);
+  if (process.argv.includes('--smoke-voice-cycles')) {
+    Object.assign(checks, await require('./voice-cycle-smoke.cjs')({ ...c, obs, views, wait }));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-capes')) {
+    const context = { ...c, obs, views, wait };
+    for (const name of ['EduBot', 'EduDracula', 'EduLuchador', 'EduMoon', 'EduStarlight', 'EduStrange', 'EduWitch']) {
+      Object.assign(checks, await smokeVoicePose(context, name));
+    }
+    Object.assign(checks, await require('./dracula-bat-smoke.cjs')(context));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-hair')) {
+    const context = { ...c, obs, views, wait };
+    for (const name of ['EduAlloy', 'EduCage', 'EduConquest', 'EduDeep', 'EduEve', 'EduJames', 'EduLeon', 'EduMark', 'EduSoldier']) {
+      Object.assign(checks, await smokeVoicePose(context, name));
+    }
+    obs.destroy(); return checks;
+  }
   if (process.argv.includes('--smoke-kimi')) {
     Object.assign(checks,await require('./edukimi-smoke.cjs')({...c,obs,views,wait}));
     obs.destroy();return checks;
@@ -188,8 +208,26 @@ module.exports = async function(c) {
     Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduSteve'));
     obs.destroy(); return checks;
   }
-  if (process.argv.includes('--smoke-eduhelldriver')) {
-    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduHellDriver'));
+  if (process.argv.includes('--smoke-eduhelldiver')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduHellDiver'));
+    const { animationProfile, serializePet } = require('./pet-package.cjs');
+    const pet = parsePet(fs.readFileSync(path.join(root, 'pets', 'EduHellDiver-Voz.pet')));
+    const legacy = { ...pet, name: 'EduHellDriver', animation: animationProfile({ float: pet.animation.float, blink: pet.animation.blink }) };
+    const legacyId = c.petId(legacy), legacyFile = `${legacyId}.pet`;
+    fs.writeFileSync(path.join(smokeRoot, 'pets', legacyFile), serializePet(legacy));
+    savePreferences();
+    const settingsFile = path.join(smokeRoot, 'settings.json');
+    const saved = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+    for (const voice of [saved.voice, saved.canvasProfiles[saved.canvasFormat].voice]) {
+      voice.petKey = legacyId;
+      voice.petFile = legacyFile;
+    }
+    fs.writeFileSync(settingsFile, JSON.stringify(saved));
+    loadPreferences();
+    notify();
+    const refreshed = await panel.webContents.executeJavaScript('window.aula.getPetLibrary()');
+    checks.eduhelldiverRestoresPreviousSelection = snapshot().companions.voice.id === c.petId(pet) && getFrame().animation.cloth.enabled;
+    checks.eduhelldiverReplacesOldCatalogName = refreshed.pets.filter(entry => entry.name === 'EduHellDiver').length === 1 && !refreshed.pets.some(entry => entry.name === 'EduHellDriver');
     obs.destroy(); return checks;
   }
   if (process.argv.includes('--smoke-edusus')) {
@@ -206,6 +244,50 @@ module.exports = async function(c) {
   }
   if (process.argv.includes('--smoke-eduhalaand')) {
     Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduHalaand'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-edu007')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'Edu007'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-eduelegante')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduElegante'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-edustrading')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduStrading'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-edubad')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduBad'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-edusimi')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduSimi'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-edudeep')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduDeep'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-edusoldier')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduSoldier'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-edunoir')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduNoir'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-edustarlight')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduStarlight'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-eduatrain')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduATrain'));
+    obs.destroy(); return checks;
+  }
+  if (process.argv.includes('--smoke-eduluchador')) {
+    Object.assign(checks, await require('./voice-pose-smoke.cjs')({ ...c, obs, views, wait }, 'EduLuchador'));
     obs.destroy(); return checks;
   }
   if (process.argv.includes('--smoke-dracula')) {
@@ -235,25 +317,21 @@ module.exports = async function(c) {
   // La captura ya se probó; controlar ahora el nivel mediante el puente real para comprobar cada pose.
   await microphoneWindow.webContents.executeJavaScript(`window.dispatchEvent(new Event('pagehide')); window.testLevel=0;window.testTimer=setInterval(()=>window.microphone.level(window.testLevel),30);void 0`);
   await panel.webContents.executeJavaScript('window.aula.setSettings({micRelease:0})');
-  const original = parsePet(fs.readFileSync(path.join(root, 'pets', 'EduWitch-Voz.pet')));
   for (const [kind, speaking, blinking] of [['open', false, false], ['talking', true, false], ['talkingClosed', true, true], ['closed', false, true]]) {
     await microphoneWindow.webContents.executeJavaScript(`window.testLevel=${speaking ? .4 : 0};void 0`);
     motion.blinkRemaining = blinking ? .1 : 0; notify(); await waitPose(kind);
-    const source = require('electron').nativeImage.createFromBuffer(original.images[kind].bytes);
-    const expected = mirrorBitmap(source.toBitmap(), source.getSize().width);
     for (const win of views) {
-      const url = await win.webContents.executeJavaScript(`document.getElementById('voice-layer').contentDocument.getElementById('pet-voice').toDataURL('image/png')`);
-      const bytes = Buffer.from(url.split(',')[1], 'base64');
-      assert.ok(expected.equals(require('electron').nativeImage.createFromBuffer(bytes).toBitmap()), `Píxeles ${kind}`);
-      if (win === obs) fs.writeFileSync(path.join(smokeRoot, `voice-${kind}.png`), bytes);
+      await smokeVoicePose.assertWindExpression(win, 'EduWitch', kind, getFrame().voice.urls[kind], true);
+      if (win === obs) {
+        const url = await win.webContents.executeJavaScript(`document.getElementById('voice-layer').contentDocument.getElementById('pet-voice').toDataURL('image/png')`);
+        fs.writeFileSync(path.join(smokeRoot, `voice-${kind}.png`), Buffer.from(url.split(',')[1], 'base64'));
+      }
     }
   }
   checks.fourPosesExactAndSynchronized = true;
   await panel.webContents.executeJavaScript('window.aula.setSettings({corner:"bottom-left"},"voice")'); await waitPose('closed');
-  const unmirrored = require('electron').nativeImage.createFromBuffer(original.images.closed.bytes).toBitmap();
   for (const win of views) {
-    const url = await win.webContents.executeJavaScript(`document.getElementById('voice-layer').contentDocument.getElementById('pet-voice').toDataURL('image/png')`);
-    assert.ok(unmirrored.equals(require('electron').nativeImage.createFromBuffer(Buffer.from(url.split(',')[1], 'base64')).toBitmap()), 'La esquina izquierda conserva la orientación original.');
+    await smokeVoicePose.assertWindExpression(win, 'EduWitch', 'closed', getFrame().voice.urls.closed);
   }
   await panel.webContents.executeJavaScript('window.aula.setSettings({corner:"bottom-right"},"voice")'); await waitPose('closed');
   checks.automaticMirrorBothSides = true;

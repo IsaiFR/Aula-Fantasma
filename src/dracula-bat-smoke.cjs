@@ -8,7 +8,12 @@ module.exports = async function(c) {
   await js('window.aula.setSettings({paused:true,micEnabled:false,opacity:81,draculaSeconds:2,draculaBatSeconds:2,draculaBatEnabled:true},"voice")');
   await wait(()=>js(`!document.getElementById('dracula-bat-card').hidden`),'Controles de Drácula');
   checks.controlsExclusiveToDracula = await js(`!document.getElementById('manual-opacity-controls').hidden && document.getElementById('ghost-opacity-card').hidden`);
-  checks.cleanedPanelLayout = await js(`(() => {const card=document.getElementById('dracula-bat-card'),obs=document.querySelector('.obs-card');return !document.querySelector('.topbar,.sample-camera,#canvas-stage-label') && card.parentElement===obs.parentElement && card.getBoundingClientRect().top>=obs.getBoundingClientRect().bottom;})()`);
+  checks.draculaControlsInVoiceInspector = await js(`(() => {
+    const card = document.getElementById('dracula-bat-card');
+    return card.closest('#pet-settings')?.hidden === false
+      && document.getElementById('output-settings').hidden
+      && document.getElementById('edit-voice').getAttribute('aria-pressed') === 'true';
+  })()`);
   await js(`(() => {for (const id of ['draculaSeconds-value','draculaBatSeconds-value']) {const el=document.getElementById(id);el.value='1';el.dispatchEvent(new Event('change',{bubbles:true}));}})()`);
   await wait(()=>c.snapshot().settings.draculaSeconds===1 && c.snapshot().settings.draculaBatSeconds===1,'Duraciones');
   checks.durationControls = true;
@@ -18,7 +23,7 @@ module.exports = async function(c) {
     motion.elapsed=base+time; notify();
     await wait(async()=> (await Promise.all(views.map(v=>v.webContents.executeJavaScript(`${canvas}.dataset.form===${JSON.stringify(phase)} && ${canvas}.dataset.phase===${JSON.stringify(String(motion.elapsed))}`)))).every(Boolean),phase);
     const urls=await Promise.all(views.map(v=>v.webContents.executeJavaScript(`${canvas}.toDataURL('image/png')`)));
-    assert.ok(urls.every(url=>url===urls[0]),'Píxeles idénticos en escritorio, panel y salida OBS');
+    if (phase === 'bat') assert.ok(urls.every(url=>url===urls[0]),'Píxeles idénticos del murciélago en todas las salidas');
     return Buffer.from(urls[0].split(',')[1],'base64');
   };
   const normal=await pose(0,'dracula');

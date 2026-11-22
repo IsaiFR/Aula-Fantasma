@@ -4,7 +4,7 @@ const {parsePet,serializePet}=require('../src/pet-package.cjs'),decodePng=requir
 const root=path.join(__dirname,'..'),assets=path.join(root,'web','edufast'),bytes=fs.readFileSync(path.join(root,'pets','EduFast-Voz.pet')),pet=parsePet(bytes);
 const poses=['open','closed','talking','talkingClosed'];
 test('EduFast es una mascota de voz autocontenida con cuatro poses y conserva el original de reposo',()=>{
-  assert.equal(pet.name,'EduFast');assert.equal(pet.kind,'voice');assert.equal(JSON.parse(bytes).version,6);
+  assert.equal(pet.name,'EduFast');assert.equal(pet.kind,'voice');assert.equal(JSON.parse(bytes).version,15);
   assert.deepEqual(parsePet(serializePet(pet)),pet);
   assert.ok(pet.images.open.bytes.equals(fs.readFileSync(path.join(assets,'reference.png'))));
   // PNG indexado original: el verde de la paleta tiene alfa cero.

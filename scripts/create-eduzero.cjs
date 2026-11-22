@@ -4,6 +4,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { createCanvas, loadImage, Path2D } = require(process.env.AULA_CANVAS_MODULE || path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'node', 'node_modules', '@napi-rs', 'canvas'));
 const { serializePet, animationProfile } = require('../src/pet-package.cjs');
+const { VOICE_CYCLES } = require('../src/voice-cycle.cjs');
 const { behaviorProfile } = require('../src/behavior.cjs');
 
 const root = path.join(__dirname, '..');
@@ -106,7 +107,7 @@ async function createPet() {
   images.mist = { mime: format, bytes: mist.toBuffer(format) };
   for (const [name, resource] of Object.entries(images)) fs.writeFileSync(path.join(assets, name + '.png'), resource.bytes);
   const animation = animationProfile({ float: { enabled: false }, blink: { enabled: true, intervalMin: .75, intervalMax: 4, duration: .15, closeDuration: .04, openDuration: .06 } });
-  const bytes = serializePet({ name: 'EduZero', kind: 'voice', images, animation, behavior: behaviorProfile() });
+  const bytes = serializePet({ name: 'EduZero', kind: 'voice', images, animation, behavior: behaviorProfile(), effects: { voiceCycle: VOICE_CYCLES.EduZero } });
   fs.writeFileSync(path.join(root, 'pets', 'EduZero-Voz.pet'), bytes);
   console.log(`EduZero-Voz.pet · ${bytes.length} bytes`);
 }

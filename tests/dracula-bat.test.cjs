@@ -2,16 +2,17 @@
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs'), crypto = require('node:crypto');
 const { draculaBatFrame } = require('../src/dracula-bat.cjs');
 const { DEFAULTS, sanitizeSettings } = require('../src/settings.cjs');
-const { parsePet, serializePet, petId } = require('../src/pet-package.cjs');
+const { animationProfile, parsePet, serializePet, petId } = require('../src/pet-package.cjs');
 const { bundledUpdate } = require('../src/pet-updates.cjs');
 const read = name => parsePet(fs.readFileSync(require('node:path').join(__dirname, '..', 'pets', name)));
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
+const withoutWind = pet => ({ ...pet, animation: animationProfile({ float: pet.animation.float, blink: pet.animation.blink }) });
 test('EduDracula conserva exactamente sus cuatro poses, animación e identidad original al retirar la adición', () => {
   const p = read('EduDracula-Voz.pet');
   for (const [kind, expected] of Object.entries({open:'60daab5c1912e4cb10908fd2d59d8c4b51fd3549c406e1da787f75029162e5c7',closed:'2090843e5c9b86bd849151c80eeb444b3ada6ad7b4170414a8f8cb8ac43fed30',talking:'07fba6ce4be6ddf215423ea5be9f85756d8b9c05245dcfede963e384a426f80a',talkingClosed:'a8e278ae9cefdfe4ca294daff4c93992d9bf162e2006df715b8b48ec73e01479'})) assert.equal(hash(p.images[kind].bytes), expected);
-  assert.equal(hash(JSON.stringify(p.animation)), 'ebfb2b791ae0a64835485e10bbba01e2bd5bbf570ad44cab4652b93217fca4aa');
+  assert.equal(hash(JSON.stringify(withoutWind(p).animation)), 'ebfb2b791ae0a64835485e10bbba01e2bd5bbf570ad44cab4652b93217fca4aa');
   assert.deepEqual(parsePet(serializePet(p)), p);
-  const original = {...p, images:{...p.images}}; for (const kind of ['bat','batOpen','batClosed','batTalkingClosed']) delete original.images[kind]; delete original.effects;
+  const original = {...withoutWind(p), images:{...p.images}}; for (const kind of ['bat','batOpen','batClosed','batTalkingClosed']) delete original.images[kind]; delete original.effects;
   assert.equal(petId(original), 'dc0c953fd5c22bd51873720c6468474983ac6dd99f5ca64e5fa6ce71227c9914');
   assert.equal(bundledUpdate(petId(original)), 'EduDracula-Voz.pet');
 });
@@ -43,9 +44,10 @@ test('El importador exige recurso PNG, parámetros válidos y formato v9 para la
   }
   assert.equal(JSON.parse(serializePet(read('EduGhost-Voz.pet'))).version,8);
 });
-test('El murciélago conserva las cuatro poses en v10 y sigue importando la primera versión v9', () => {
+test('EduDracula conserva ambas formas con viento en v14 y sigue importando v10 y v9', () => {
   const current=read('EduDracula-Voz.pet'), manifest=JSON.parse(serializePet(current));
-  assert.equal(manifest.version,10);
+  assert.equal(manifest.version,14);
+  assert.ok(current.animation.cloth.motionRegions.length > 0);
   const poses=['batOpen','bat','batClosed','batTalkingClosed'].map(kind=>current.images[kind]);
   assert.ok(poses.every(image=>image.mime==='image/png'));
   assert.equal(new Set(poses.map(image=>hash(image.bytes))).size,4);
@@ -53,7 +55,10 @@ test('El murciélago conserva las cuatro poses en v10 y sigue importando la prim
     const invalid=structuredClone(manifest); delete invalid.images[kind];
     assert.throws(()=>parsePet(Buffer.from(JSON.stringify(invalid))),/cuatro poses/);
   }
-  const old={...current,images:{...current.images}};
+  const old={...withoutWind(current),images:{...current.images}};
+  assert.equal(JSON.parse(serializePet(old)).version,10);
+  assert.equal(petId(old),'737fe6529fe4fe38874f4c82d54f3c997fa1b9e0f0496cf477f49955df9c052a');
+  assert.equal(bundledUpdate(petId(old)),'EduDracula-Voz.pet');
   for(const kind of ['batOpen','batClosed','batTalkingClosed']) delete old.images[kind];
   assert.equal(JSON.parse(serializePet(old)).version,9);
   assert.equal(petId(old),'293983cf3fccd0c570afc47d51a08f28bb034708532f5df01f04adc2632f761f');

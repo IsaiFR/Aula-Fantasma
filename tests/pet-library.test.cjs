@@ -10,7 +10,7 @@ const root = path.join(__dirname, '..');
 
 test('El selector incluye los personajes empaquetados sin duplicar el GIF independiente de Frankenstein', async () => {
   const { entries, unavailable } = await loadLibrary([path.join(root, 'pets'), path.join(root, 'pets')]);
-  assert.deepEqual([...entries.values()].map(entry => entry.pet.name), ['Catrina', 'Cuellilargo', 'EduAlloy', 'EduBot', 'EduCage', 'EduCatrin', 'EduClaus', 'EduConquest', 'EduCookie', 'EduDominos', 'EduDonalds', 'EduDoom', 'EduDracula (voz)', 'EduEinstein', 'EduElfo', 'EduEve', 'EduF1', 'EduFallout', 'EduFast', 'EduFrankenstein', 'EduGhost', 'EduGhost (voz)', 'EduGrinch', 'EduHalaand', 'EduHellDriver', 'EduHomelander', 'EduJames', 'EduKimi', 'EduLeon', 'EduMark', 'EduMomia (voz)', 'EduMoon', 'EduNolan', 'EduNueces', 'EduOxxo', 'EduPiramyd', 'EduPsycho', 'EduReno', 'EduReturnal', 'EduRivet', 'EduScorpion', 'EduScream', 'EduSlayer', 'EduSnow', 'EduSteve', 'EduStrange', 'EduSus', 'EduWarhammer', 'EduWitch (voz)', 'EduZero', 'EduZombie']);
+  assert.deepEqual([...entries.values()].map(entry => entry.pet.name), ['Catrina', 'Cuellilargo', 'Edu007', 'EduAlloy', 'EduATrain', 'EduBad', 'EduBot', 'EduCage', 'EduCatrin', 'EduClaus', 'EduConquest', 'EduCookie', 'EduDeep', 'EduDominos', 'EduDonalds', 'EduDoom', 'EduDracula (voz)', 'EduEinstein', 'EduElegante', 'EduElfo', 'EduEve', 'EduF1', 'EduFallout', 'EduFast', 'EduFrankenstein', 'EduGhost', 'EduGhost (voz)', 'EduGrinch', 'EduHalaand', 'EduHellDiver', 'EduHomelander', 'EduJames', 'EduKimi', 'EduLeon', 'EduLuchador', 'EduMark', 'EduMomia (voz)', 'EduMoon', 'EduNoir', 'EduNolan', 'EduNueces', 'EduOxxo', 'EduPiramyd', 'EduPsycho', 'EduReno', 'EduReturnal', 'EduRivet', 'EduScorpion', 'EduScream', 'EduSimi', 'EduSlayer', 'EduSnow', 'EduSoldier', 'EduStarlight', 'EduSteve', 'EduStrading', 'EduStrange', 'EduSus', 'EduWarhammer', 'EduWitch (voz)', 'EduZero', 'EduZombie']);
   assert.equal(unavailable, 0);
   assert.ok([...entries.keys()].every(id => /^[a-f0-9]{64}$/.test(id)));
 });
@@ -24,7 +24,7 @@ test('Incluye las mascotas importadas y la activa; deduplica por contenido y omi
   fs.writeFileSync(path.join(directory, 'invalid.aulapet'), 'archivo inválido');
   fs.writeFileSync(path.join(directory, 'duplicated.png'), original.images.open.bytes);
   const { entries, unavailable } = await loadLibrary([path.join(root, 'pets'), directory], custom);
-  assert.equal(entries.size, 52); assert.equal(unavailable, 1);
+  assert.equal(entries.size, 63); assert.equal(unavailable, 1);
   assert.equal(entries.get(petId(custom)).pet.name, 'Mi personaje');
   assert.ok(![...entries.values()].some(entry => entry.pet.name === 'duplicated'));
 });

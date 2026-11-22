@@ -4,7 +4,7 @@ const {parsePet,serializePet}=require('../src/pet-package.cjs'),decodePng=requir
 const root=path.join(__dirname,'..'),assets=path.join(root,'web','edusnow'),bytes=fs.readFileSync(path.join(root,'pets','EduSnow-Voz.pet')),pet=parsePet(bytes);
 const poses=['open','closed','talking','talkingClosed'];
 test('EduSnow es una mascota de voz autocontenida con cuatro poses y conserva el original de reposo',()=>{
-  assert.equal(pet.name,'EduSnow');assert.equal(pet.kind,'voice');assert.equal(JSON.parse(bytes).version,6);
+  assert.equal(pet.name,'EduSnow');assert.equal(pet.kind,'voice');assert.equal(JSON.parse(bytes).version,15);
   assert.deepEqual(parsePet(serializePet(pet)),pet);
   assert.ok(pet.images.open.bytes.equals(fs.readFileSync(path.join(assets,'reference.png'))));
   assert.equal(new Set(poses.map(k=>pet.images[k].bytes.toString('base64'))).size,4);

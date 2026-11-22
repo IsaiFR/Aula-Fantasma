@@ -1,6 +1,6 @@
 {
   "format": "aula-fantasma-pet",
-  "version": 12,
+  "version": 15,
   "kind": "voice",
   "name": "EduZero",
   "images": {
@@ -80,5 +80,12 @@
       "lowerSeconds": 0
     },
     "rig": null
+  },
+  "effects": {
+    "voiceCycle": {
+      "action": "freeze",
+      "idleSeconds": 20,
+      "activeSeconds": 6
+    }
   }
 }

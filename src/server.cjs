@@ -13,6 +13,7 @@ const ROUTES = {
   '/microphone': ['microphone.html', 'text/html; charset=utf-8'],
   '/microphone.js': ['microphone.js', 'text/javascript; charset=utf-8'],
   '/voice.js': ['voice.js', 'text/javascript; charset=utf-8'],
+  '/voice-cycle.js': ['voice-cycle.js', 'text/javascript; charset=utf-8'],
   '/dracula-bat.js': ['dracula-bat.js', 'text/javascript; charset=utf-8'],
   '/favicon.ico': ['favicon.ico', 'image/x-icon'],
   '/panel': ['panel.html', 'text/html; charset=utf-8'],

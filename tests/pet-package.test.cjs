@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { parsePet, serializePet, fromImage, petId, safeFilename, animationProfile, MAX_FILE } = require('../src/pet-package.cjs');
+const { bundledUpdate } = require('../src/pet-updates.cjs');
 const { Motion } = require('../src/motion.cjs');
 const { DEFAULTS } = require('../src/settings.cjs');
 const file = fs.readFileSync(path.join(__dirname, '..', 'pets', 'EduGhost.aulapet'));
@@ -90,4 +91,36 @@ test('La identidad del paquete cambia con imágenes o animación y el nombre sug
   assert.equal(safeFilename('../Nuevo:pet'), '.._Nuevo_pet.aulapet');
   assert.equal(safeFilename('CON'), 'Mascota_CON.aulapet');
   assert.equal(safeFilename(''), 'Mascota.aulapet');
+});
+for (const [name, previousName = name] of [['EduHomelander'], ['EduNolan'], ['EduHellDiver', 'EduHellDriver']]) test(`${name} guarda el viento localizado y reconoce la selección anterior`, () => {
+  const filename = `${name}-Voz.pet`;
+  const bytes = fs.readFileSync(path.join(__dirname, '..', 'pets', filename));
+  const manifest = JSON.parse(bytes);
+  const pet = parsePet(bytes);
+  assert.equal(manifest.version, 13);
+  assert.deepEqual(parsePet(serializePet(pet)), pet);
+  for (const [pose, image] of Object.entries(pet.images)) {
+    assert.ok(image.bytes.equals(fs.readFileSync(path.join(__dirname, '..', 'web', name.toLowerCase(), `${pose}.png`))));
+  }
+  const legacy = { ...pet, name: previousName, animation: animationProfile({ float: pet.animation.float, blink: pet.animation.blink }) };
+  assert.equal(bundledUpdate(petId(legacy)), filename);
+  manifest.version = 7;
+  assert.throws(() => parse(manifest), /v13/);
+  manifest.version = 13;
+  manifest.animation.cloth.motionRegions[0].points[0][0] = -1;
+  assert.throws(() => parse(manifest), /rango/);
+});
+
+test('El viento en capas y cabello se exporta y conserva la selección anterior', () => {
+  for (const name of ['EduBot', 'EduLuchador', 'EduMoon', 'EduStarlight', 'EduStrange', 'EduWitch',
+    'EduAlloy', 'EduCage', 'EduConquest', 'EduDeep', 'EduEve', 'EduJames', 'EduLeon', 'EduMark', 'EduSoldier']) {
+    const filename = `${name}-Voz.pet`;
+    const bytes = fs.readFileSync(path.join(__dirname, '..', 'pets', filename));
+    const pet = parsePet(bytes);
+    assert.equal(JSON.parse(bytes).version, 13);
+    assert.ok(pet.animation.cloth.enabled && pet.animation.cloth.motionRegions.length);
+    assert.deepEqual(parsePet(serializePet(pet)), pet);
+    const legacy = { ...pet, animation: animationProfile({ float: pet.animation.float, blink: pet.animation.blink }) };
+    assert.equal(bundledUpdate(petId(legacy)), filename);
+  }
 });

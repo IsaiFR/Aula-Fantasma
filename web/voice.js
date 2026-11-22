@@ -21,11 +21,14 @@ window.AulaVoice = class {
     const voice = frame.voice, active = Boolean(voice && this.ready && enabled);
     this.body.classList.toggle('voice-active', active);
     if (!active) return;
-    const kind = voice.speaking ? (voice.blinking ? 'talkingClosed' : 'talking') : (voice.blinking ? 'closed' : 'open');
+    const cycle = frame.voiceCycle;
+    const frozen = cycle?.action === 'freeze' && cycle.progress >= .35 && cycle.progress <= .73;
+    const kind = frozen ? 'open' : voice.speaking ? (voice.blinking ? 'talkingClosed' : 'talking') : (voice.blinking ? 'closed' : 'open');
     const image = this.images[kind] || this.images[voice.speaking ? 'talking' : 'open'];
     if (!image) return;
     const mirrored = Boolean(voice.mirrored);
-    const clothProfile = frame.animation?.cloth, animated = Boolean(clothProfile?.enabled);
+    const bat = frame.draculaBat;
+    const clothProfile = frame.animation?.cloth, animated = Boolean(clothProfile?.enabled && bat?.mix !== 1);
     const sourceKey = `${this.key}:${kind}`;
     if (animated && this.source.dataset.revision !== sourceKey) {
       this.source.width = image.naturalWidth; this.source.height = image.naturalHeight;
@@ -34,23 +37,30 @@ window.AulaVoice = class {
     }
     if (animated) this.cloth.render(frame, true, clothProfile);
     const texture = animated ? this.cloth.canvas : image;
-    const width = animated ? texture.width : image.naturalWidth, height = animated ? texture.height : image.naturalHeight;
-    const bat = frame.draculaBat;
+    const useClothSize = animated && !bat?.mix;
+    const width = useClothSize ? texture.width : image.naturalWidth, height = useClothSize ? texture.height : image.naturalHeight;
     const mist = this.images.mist;
     const mistTick = mist ? Math.floor(frame.elapsed * 24) : null;
     this.canvas.dataset.form = bat?.phase || 'original';
     this.canvas.dataset.batMix = String(bat?.mix || 0);
     this.canvas.dataset.phase = String(frame.elapsed);
-    const renderedKey = `${sourceKey}:${mirrored}:${animated ? this.cloth.key : ''}:${bat && bat.mix > 0 ? `${bat.elapsed}:${bat.mix}` : ''}:${mistTick ?? ''}`;
+    this.canvas.dataset.action = cycle?.action ?? '';
+    this.canvas.dataset.actionTime = cycle ? String(cycle.time) : '';
+    const renderedKey = `${sourceKey}:${mirrored}:${animated ? this.cloth.key : ''}:${bat && bat.mix > 0 ? `${bat.elapsed}:${bat.mix}` : ''}:${mistTick ?? ''}:${cycle?.action ?? ''}:${cycle?.time ?? ''}`;
     if (this.renderedKey === renderedKey) return;
     this.renderedKey = renderedKey;
     if (this.canvas.width !== width || this.canvas.height !== height) { this.canvas.width = width; this.canvas.height = height; }
     const context = this.canvas.getContext('2d'); context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     context.save();
     if (mirrored) { context.translate(this.canvas.width, 0); context.scale(-1, 1); }
-    context.globalAlpha = bat ? 1 - bat.mix : 1;
-    context.drawImage(texture, 0, 0); context.globalAlpha = 1;
-    if (mist) this.drawMist(context, mist, mistTick, width, height);
+    if (cycle) {
+      window.renderAulaVoiceCycle(context, texture, cycle, width, height, mist && (() => this.drawMist(context, mist, mistTick, width, height)));
+    } else {
+      context.globalAlpha = bat ? 1 - bat.mix : 1;
+      if (bat?.mix !== 1) context.drawImage(texture, 0, 0, width, height);
+      context.globalAlpha = 1;
+      if (mist) this.drawMist(context, mist, mistTick, width, height);
+    }
     const batKind = ({ open: 'batOpen', closed: 'batClosed', talking: 'bat', talkingClosed: 'batTalkingClosed' })[kind];
     if (bat) this.bat.render(context, this.images.bat, bat, width, height, this.images[batKind] || this.images.bat);
     this.canvas.dataset.batPose = bat ? (this.images[batKind] ? batKind : 'bat') : '';
@@ -69,7 +79,7 @@ window.AulaVoice = class {
     context.save();
     context.translate(width / 2 + width * .012 * sway, height / 2 - height * .009 * lift);
     context.rotate(.027 * sway);
-    context.globalAlpha = 1 - .13 * lift;
+    context.globalAlpha *= 1 - .13 * lift;
     context.drawImage(image, -width / 2, -height / 2, width, height);
     context.restore();
   }

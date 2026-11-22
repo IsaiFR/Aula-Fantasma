@@ -7,18 +7,17 @@ const { serializePet, animationProfile } = require('../src/pet-package.cjs');
 const { behaviorProfile } = require('../src/behavior.cjs');
 
 const root = path.join(__dirname, '..');
-const assets = path.join(root, 'web', 'eduhelldriver');
+const assets = path.join(root, 'web', 'edunoir');
 const size = 1254;
 const mime = 'image/png';
-// La animación queda dentro de los lentes oscuros y en la rejilla del respirador.
-// La curva exterior del lente derecho conserva el reflejo del borde.
-const lenses = new Path2D('M589 350 C594 327 620 318 663 317 C708 315 747 319 760 341 C777 364 761 399 747 417 C730 439 699 446 669 445 C635 446 606 438 595 411 C586 392 582 368 589 350 Z M853 346 C865 323 889 316 923 314 L937 314 C951 331 962 352 966 377 C972 400 971 424 956 441 C920 448 883 436 865 409 C854 392 846 365 853 346 Z');
-const grille = new Path2D('M785 621 L794 514 Q804 505 830 506 Q855 507 869 517 L860 619 Q827 626 785 621 Z');
+// Las expresiones quedan dentro de las lentes y el hocico.
+const lenses = new Path2D('M545 328 C553 302 584 291 624 289 C668 289 696 296 713 310 C729 324 722 351 712 374 C698 403 674 423 642 426 C602 431 575 420 558 393 C548 376 538 350 545 328 Z M800 309 C813 287 857 278 906 277 C918 297 926 326 933 348 L944 381 C930 404 900 415 871 413 C844 414 822 398 809 375 C797 352 790 327 800 309 Z');
+const muzzle = new Path2D('M716 432 Q744 428 771 428 Q795 427 827 431 L827 478 Q804 473 789 470 Q774 466 758 471 L717 479 Z');
 
-function paintExpression(context, image, clip) {
+function paintExpression(context, image, clip, offsetY = 0) {
   context.save();
   context.clip(clip);
-  context.drawImage(image, 0, 0);
+  context.drawImage(image, 0, offsetY);
   context.restore();
 }
 
@@ -37,17 +36,21 @@ async function createPet() {
     const context = canvas.getContext('2d');
     context.drawImage(reference, 0, 0);
     if (eyesClosed) paintExpression(context, blink, lenses);
-    if (speaking) paintExpression(context, talking, grille);
+    if (speaking) paintExpression(context, talking, muzzle, -3);
     const expression = context.getImageData(0, 0, size, size);
     for (let index = 3; index < expression.data.length; index += 4) expression.data[index] = original.data[index];
     context.putImageData(expression, 0, 0);
     images[name] = { mime, bytes: canvas.toBuffer(mime) };
   }
   for (const [name, resource] of Object.entries(images)) fs.writeFileSync(path.join(assets, name + '.png'), resource.bytes);
-  const animation = animationProfile({ float: { enabled: false }, blink: { enabled: true, intervalMin: .75, intervalMax: 4, duration: .15 } });
-  const pet = serializePet({ name: 'EduHellDriver', kind: 'voice', images, animation, behavior: behaviorProfile() });
-  fs.writeFileSync(path.join(root, 'pets', 'EduHellDriver-Voz.pet'), pet);
-  console.log(`EduHellDriver-Voz.pet · ${pet.length} bytes`);
+  const animation = animationProfile({
+    float: { enabled: false },
+    cloth: { enabled: false },
+    blink: { enabled: true, intervalMin: .75, intervalMax: 4, duration: .15 }
+  });
+  const pet = serializePet({ name: 'EduNoir', kind: 'voice', images, animation, behavior: behaviorProfile() });
+  fs.writeFileSync(path.join(root, 'pets', 'EduNoir-Voz.pet'), pet);
+  console.log(`EduNoir-Voz.pet · ${pet.length} bytes`);
 }
 
 createPet().catch(error => { console.error(error); process.exitCode = 1; });

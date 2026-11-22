@@ -2,6 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const {createCanvas,loadImage}=require(process.env.AULA_CANVAS_MODULE||path.join(os.homedir(),'.cache','codex-runtimes','codex-primary-runtime','dependencies','node','node_modules','@napi-rs','canvas'));
 const {serializePet,animationProfile}=require('../src/pet-package.cjs');
+const { VOICE_CYCLES } = require('../src/voice-cycle.cjs');
 const {behaviorProfile}=require('../src/behavior.cjs');
 const root=path.join(__dirname,'..'),assets=path.join(root,'web','edusnow');
 // Regiones faciales en el lienzo original de 1254 px. El resto del personaje es idéntico.
@@ -35,7 +36,7 @@ function onNose(x,y){let inside=false;for(let i=0,j=noseOutline.length-1;i<noseO
     ctx.putImageData(frame,0,0);const bytes=c.toBuffer('image/png');fs.writeFileSync(path.join(assets,kind+'.png'),bytes);images[kind]={mime:'image/png',bytes};
   }
   const animation=animationProfile({float:{enabled:false},cloth:{enabled:false},blink:{enabled:true,intervalMin:.75,intervalMax:4,duration:.15,closeDuration:.04,openDuration:.06,regions:[]}});
-  const pet={name:'EduSnow',kind:'voice',images,animation,behavior:behaviorProfile()};
+  const pet={name:'EduSnow',kind:'voice',images,animation,behavior:behaviorProfile(), effects: { voiceCycle: VOICE_CYCLES.EduSnow }};
   const bytes=serializePet(pet);fs.writeFileSync(path.join(root,'pets','EduSnow-Voz.pet'),bytes);
   fs.writeFileSync(path.join(assets,'regions.json'),JSON.stringify(regions,null,2)+'\n');
   console.log(JSON.stringify({pet:'pets/EduSnow-Voz.pet',name:pet.name,version:JSON.parse(bytes).version,bytes:bytes.length,poses:Object.keys(images)}));

@@ -4,14 +4,14 @@ const {parsePet,serializePet}=require('../src/pet-package.cjs'),decodePng=requir
 const root=path.join(__dirname,'..'),assets=path.join(root,'web','edualloy'),bytes=fs.readFileSync(path.join(root,'pets','EduAlloy-Voz.pet')),pet=parsePet(bytes);
 const poses=['open','closed','talking','talkingClosed'];
 test('EduAlloy es una mascota de voz autocontenida con cuatro poses y conserva el original de reposo',()=>{
-  assert.equal(pet.name,'EduAlloy');assert.equal(pet.kind,'voice');assert.equal(JSON.parse(bytes).version,6);
+  assert.equal(pet.name,'EduAlloy');assert.equal(pet.kind,'voice');assert.equal(JSON.parse(bytes).version,13);
   assert.deepEqual(parsePet(serializePet(pet)),pet);
   assert.ok(pet.images.open.bytes.equals(fs.readFileSync(path.join(assets,'reference.png'))));
   assert.equal(new Set(poses.map(k=>pet.images[k].bytes.toString('base64'))).size,4);
   // Conservar el alfa original, incluido posible ruido de exportación de 1/255.
   for(const kind of poses){const png=decodePng(pet.images[kind].bytes);assert.equal(png.width,1254);assert.equal(png.height,1254);assert.ok(png.pixels[3]<=1);assert.ok(png.pixels.some((v,i)=>i%4===3&&v===0));assert.ok(png.pixels.some((v,i)=>i%4===3&&v===255));}
   assert.ok(pet.animation.blink.enabled);assert.deepEqual(pet.animation.blink.regions,[]);
-  assert.equal(pet.animation.float.enabled,false);assert.equal(pet.animation.cloth.enabled,false);
+  assert.equal(pet.animation.float.enabled,false);assert.equal(pet.animation.cloth.enabled,true);
 });
 test('Las expresiones solo modifican ojos y boca: cabello, trenzas, equipo y silueta se conservan',()=>{
   const base=decodePng(pet.images.open.bytes),regions=JSON.parse(fs.readFileSync(path.join(assets,'regions.json')));

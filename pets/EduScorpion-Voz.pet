@@ -1,6 +1,6 @@
 {
   "format": "aula-fantasma-pet",
-  "version": 6,
+  "version": 15,
   "kind": "voice",
   "name": "EduScorpion",
   "images": {
@@ -76,5 +76,12 @@
       "lowerSeconds": 0
     },
     "rig": null
+  },
+  "effects": {
+    "voiceCycle": {
+      "action": "flame",
+      "idleSeconds": 20,
+      "activeSeconds": 6
+    }
   }
 }
